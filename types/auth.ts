@@ -1,4 +1,25 @@
 
+export interface UpdateUserPayload {
+  first_name?: string;
+  last_name?: string;
+  phone?: string;
+}
+
+export interface UpdateProfilePayload {
+  avatar?: string;
+  date_of_birth?: string;
+  gender?: string;
+}
+
+export interface UserProfile {
+  id: string;
+  avatar: string;
+  date_of_birth: string;
+  gender: string;
+  created_at: string;
+  updated_at: string;
+}
+
 export type UserRole = "admin" | "customer";
 
 export interface User {
@@ -11,8 +32,6 @@ export interface User {
   is_active: boolean;
   created_at: string;
 }
-
-
 
 export interface RegisterResponse {
   user: User;

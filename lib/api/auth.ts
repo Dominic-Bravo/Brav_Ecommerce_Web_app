@@ -4,15 +4,97 @@ import type {
   TestApiData,
   LoginFormData,
   LoginResponse,
+  UserProfile,
   User,
 } from "@/types/auth";
 
-import { apiClient } from "./client";
+import { apiClient, apiFetch } from "./client";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL;
 
 if (!API_URL) {
   throw new Error("NEXT_PUBLIC_API_URL is not configured.");
+}
+
+export async function deleteAccountApi(): Promise<void> {
+  const response = await apiFetch("/v1/users/me/", {
+    method: "DELETE",
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(
+      errorData?.detail ||
+        errorData?.message ||
+        "Failed to delete account."
+    );
+  }
+}
+
+// update the backend endpoints first make sure to add parameters on the update 
+export async function updateUserApi(
+  payload: UpdateUserPayload
+): Promise<User> {
+  const response = await apiFetch("/v1/users/me/", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(
+      errorData?.detail ||
+        errorData?.message ||
+        "Failed to update account information."
+    );
+  }
+
+  return response.json();
+}
+
+export async function updateProfileApi(
+  payload: UpdateProfilePayload
+): Promise<UserProfile> {
+  const response = await apiFetch("/v1/users/me/profile/", {
+    method: "PATCH",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify(payload),
+  });
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(
+      errorData?.detail ||
+        errorData?.message ||
+        "Failed to update profile."
+    );
+  }
+
+  return response.json();
+}
+
+export async function getProfileApi(): Promise<UserProfile> {
+  const response = await apiFetch("/v1/users/me/profile/");
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+
+    throw new Error(
+      errorData?.detail ||
+        errorData?.message ||
+        "Failed to fetch profile."
+    );
+  }
+
+  return response.json();
 }
 
 export async function googleLogin(code: string): Promise<LoginResponse> {
