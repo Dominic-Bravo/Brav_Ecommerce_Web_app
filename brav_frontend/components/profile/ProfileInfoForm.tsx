@@ -19,8 +19,7 @@ interface ProfileInfoFormProps {
 export default function ProfileInfoForm({
   onMessage,
 }: ProfileInfoFormProps) {
-  const [profile, setProfile] =
-    useState<UserProfile | null>(null);
+  const [profile, setProfile] = useState<UserProfile | null>(null);
 
   const [avatar, setAvatar] = useState("");
   const [dateOfBirth, setDateOfBirth] = useState("");
@@ -28,6 +27,7 @@ export default function ProfileInfoForm({
 
   const [isLoading, setIsLoading] = useState(true);
   const [isUpdating, setIsUpdating] = useState(false);
+  const [imageError, setImageError] = useState(false);
 
   useEffect(() => {
     async function loadProfile() {
@@ -37,9 +37,11 @@ export default function ProfileInfoForm({
         const data = await getProfileApi();
 
         setProfile(data);
+        // Only set avatar to what this specific user returned from the API
         setAvatar(data.avatar || "");
         setDateOfBirth(data.date_of_birth || "");
         setGender(data.gender || "");
+        setImageError(false);
       } catch (error) {
         onMessage({
           text:
@@ -56,9 +58,7 @@ export default function ProfileInfoForm({
     loadProfile();
   }, [onMessage]);
 
-  async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
-  ) {
+  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     setIsUpdating(true);
@@ -76,6 +76,7 @@ export default function ProfileInfoForm({
       setAvatar(updatedProfile.avatar || "");
       setDateOfBirth(updatedProfile.date_of_birth || "");
       setGender(updatedProfile.gender || "");
+      setImageError(false);
 
       onMessage({
         text: "Profile information updated successfully.",
@@ -116,28 +117,55 @@ export default function ProfileInfoForm({
         </p>
       </div>
 
-      <form
-        onSubmit={handleSubmit}
-        className="mt-6 space-y-4"
-      >
-        <div>
-          <label
-            htmlFor="avatar"
-            className="block text-sm font-medium text-brav-foreground"
-          >
-            Avatar URL
-          </label>
+      <form onSubmit={handleSubmit} className="mt-6 space-y-4">
+        {/* User-Specific Avatar Section */}
+        <div className="flex items-center gap-4">
+          <div className="relative h-16 w-16 shrink-0 overflow-hidden rounded-full border border-brav-border bg-gray-100 flex items-center justify-center">
+            {avatar && !imageError ? (
+              <img
+                src={avatar}
+                alt="User Avatar"
+                className="h-full w-full object-cover"
+                onError={() => setImageError(true)}
+              />
+            ) : (
+              /* Generic Neutral Placeholder Icon */
+              <svg
+                className="h-8 w-8 text-brav-muted"
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="1.5"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"
+                />
+              </svg>
+            )}
+          </div>
 
-          <input
-            id="avatar"
-            type="text"
-            placeholder="https://example.com/avatar.jpg"
-            value={avatar}
-            onChange={(event) =>
-              setAvatar(event.target.value)
-            }
-            className="mt-1 block w-full rounded-brav-md border border-brav-border p-2.5 text-sm focus:border-brav-primary focus:outline-none"
-          />
+          <div className="flex-1">
+            <label
+              htmlFor="avatar"
+              className="block text-sm font-medium text-brav-foreground"
+            >
+              Avatar URL
+            </label>
+
+            <input
+              id="avatar"
+              type="text"
+              placeholder="https://example.com/avatar.jpg"
+              value={avatar}
+              onChange={(event) => {
+                setAvatar(event.target.value);
+                setImageError(false);
+              }}
+              className="mt-1 block w-full rounded-brav-md border border-brav-border p-2.5 text-sm focus:border-brav-primary focus:outline-none"
+            />
+          </div>
         </div>
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
@@ -153,9 +181,7 @@ export default function ProfileInfoForm({
               id="date_of_birth"
               type="date"
               value={dateOfBirth}
-              onChange={(event) =>
-                setDateOfBirth(event.target.value)
-              }
+              onChange={(event) => setDateOfBirth(event.target.value)}
               className="mt-1 block w-full rounded-brav-md border border-brav-border p-2.5 text-sm focus:border-brav-primary focus:outline-none"
             />
           </div>
@@ -171,30 +197,14 @@ export default function ProfileInfoForm({
             <select
               id="gender"
               value={gender}
-              onChange={(event) =>
-                setGender(event.target.value)
-              }
+              onChange={(event) => setGender(event.target.value)}
               className="mt-1 block w-full rounded-brav-md border border-brav-border bg-white p-2.5 text-sm focus:border-brav-primary focus:outline-none"
             >
-              <option value="">
-                Select Gender
-              </option>
-
-              <option value="male">
-                Male
-              </option>
-
-              <option value="female">
-                Female
-              </option>
-
-              <option value="other">
-                Other
-              </option>
-
-              <option value="prefer_not_to_say">
-                Prefer not to say
-              </option>
+              <option value="">Select Gender</option>
+              <option value="male">Male</option>
+              <option value="female">Female</option>
+              <option value="other">Other</option>
+              <option value="prefer_not_to_say">Prefer not to say</option>
             </select>
           </div>
         </div>
@@ -205,12 +215,10 @@ export default function ProfileInfoForm({
             disabled={isUpdating || !profile}
             className="rounded-brav-md bg-brav-primary px-5 py-2.5 text-sm font-medium text-white hover:bg-brav-primary-hover disabled:cursor-not-allowed disabled:opacity-50"
           >
-            {isUpdating
-              ? "Saving Profile..."
-              : "Update Profile Info"}
+            {isUpdating ? "Saving Profile..." : "Update Profile Info"}
           </button>
         </div>
       </form>
     </section>
   );
-}
+} 

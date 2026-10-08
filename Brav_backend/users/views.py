@@ -127,6 +127,7 @@ class RegisterAPIView(APIView):
 
 class LoginAPIView(APIView):
     permission_classes = [permissions.AllowAny]
+    serializer_class = LoginSerializer # <-- Add this so spectacular can detect it
 
     @extend_schema(
         request=LoginSerializer,
@@ -298,8 +299,8 @@ class AllOnlyTestView(APIView):
 class UserMeAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
     GET: Returns current authenticated user's details.
-    PATCH: Updates allowed user profile fields.
-    DELETE: Deletes the user account and cascades all related data (profile, addresses, etc.).
+    PATCH/PUT: Updates allowed user profile fields.
+    DELETE: Deletes the user account and cascades all related data.
     """
 
     permission_classes = [permissions.IsAuthenticated]
@@ -316,11 +317,20 @@ class UserMeAPIView(generics.RetrieveUpdateDestroyAPIView):
         return super().get(request, *args, **kwargs)
 
     @extend_schema(
-        summary="Update Current User Profile",
+        summary="Update Current User Profile (Partial)",
+        request=UserMeSerializer,  # <-- This tells Swagger to show the input fields
         responses={200: UserMeSerializer},
     )
     def patch(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update Current User Profile (Full)",
+        request=UserMeSerializer,  # <-- This tells Swagger to show the input fields
+        responses={200: UserMeSerializer},
+    )
+    def put(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
 
     @extend_schema(
         summary="Delete Account",
@@ -329,7 +339,7 @@ class UserMeAPIView(generics.RetrieveUpdateDestroyAPIView):
     )
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
-        user.delete()  # Cascades to Profile, Address, tokens, etc. due to on_delete=models.CASCADE
+        user.delete()
         return Response(
             {"message": "Account successfully deleted."},
             status=status.HTTP_204_NO_CONTENT,
