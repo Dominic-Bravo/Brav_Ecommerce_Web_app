@@ -179,7 +179,12 @@ SOCIALACCOUNT_PROVIDERS = {
                 "key": "",
             }
         ],
-        "SCOPE": ["profile", "email"],
+        "SCOPE": [
+            "profile", 
+            "email",
+            "https://www.googleapis.com/auth/user.birthday.read", # Required for DOB
+            "https://www.googleapis.com/auth/user.gender.read",   # Required for Gender
+        ],
         "AUTH_PARAMS": {"access_type": "online"},
     },
     "facebook": {

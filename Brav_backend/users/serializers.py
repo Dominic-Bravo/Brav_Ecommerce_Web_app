@@ -97,7 +97,7 @@ class UserMeSerializer(serializers.ModelSerializer):
             "is_active",
             "created_at",
         ]
-        read_only_fields = fields
+        read_only_fields = ["id", "email", "is_active", "created_at"]
 
 # login user
 
