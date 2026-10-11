@@ -2,23 +2,27 @@
 
 @theme {
   /* ================================
-     BRAV COLORS
+     BRAV COLORS (per CLAUDE.md)
      ================================ */
 
-  --color-brav-primary: #111111;
-  --color-brav-primary-hover: #2a2a2a;
+  --color-brand-primary: #4f46e5;
+  --color-brand-primary-hover: #4338ca;
 
-  --color-brav-secondary: #f5f5f5;
-  --color-brav-secondary-hover: #e9e9e9;
+  --color-brand-secondary: #0f172a;
+  --color-brand-secondary-hover: #1e293b;
 
-  --color-brav-background: #ffffff;
-  --color-brav-foreground: #111111;
+  --color-brand-accent: #f59e0b;
 
-  --color-brav-muted: #737373;
-  --color-brav-border: #e5e5e5;
+  --color-ui-bg: #ffffff;
+  --color-ui-bg-muted: #f5f5f5;
 
-  --color-brav-error: #dc2626;
-  --color-brav-success: #16a34a;
+  --color-brand-border: #e5e5e5;
+
+  --color-brand-error: #dc2626;
+  --color-brand-success: #16a34a;
+
+  --color-brand-muted: #737373;
+  --color-brand-foreground: #111111;
 
   /* ================================
      BRAV TYPOGRAPHY
@@ -37,3 +41,21 @@
   --radius-brav-md: 0.5rem;
   --radius-brav-lg: 0.75rem;
 }
+
+/* Tailwind CSS v4 custom utility class mapping for legacy brav-* tokens */
+.bg-brav-primary { background-color: var(--color-brand-primary); }
+.bg-brav-primary-hover { background-color: var(--color-brand-primary-hover); }
+.bg-brav-secondary { background-color: var(--color-ui-bg-muted); }
+.bg-brav-secondary-hover { background-color: var(--color-brand-secondary-hover); }
+.bg-brav-background { background-color: var(--color-ui-bg); }
+.text-brav-foreground { color: var(--color-brand-foreground); }
+.text-brav-heading { color: var(--color-brand-secondary); }
+.text-brav-muted { color: var(--color-brand-muted); }
+.text-brav-primary { color: var(--color-brand-primary); }
+.text-brav-error { color: var(--color-brand-error); }
+.border-brav-border { border-color: var(--color-brand-border); }
+.border-brav-primary { border-color: var(--color-brand-primary); }
+.rounded-brav-sm { border-radius: var(--radius-brav-sm); }
+.rounded-brav-md { border-radius: var(--radius-brav-md); }
+.rounded-brav-lg { border-radius: var(--radius-brav-lg); }
+.focus\:border-brav-primary:focus { border-color: var(--color-brand-primary); }

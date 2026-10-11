@@ -2,6 +2,8 @@
 
 import type { SelectHTMLAttributes } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface SelectProps
   extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -31,23 +33,23 @@ export default function Select({
 
       <select
         id={id}
-        className={`
-          w-full
-          rounded-brav-md
-          border
-          bg-white
-          px-4
-          py-3
-          text-sm
-          text-brav-foreground
-          outline-none
-          transition
-          focus:border-brav-primary
-          focus:ring-2
-          focus:ring-brav-primary/10
-          ${error ? "border-brav-error" : "border-brav-border"}
-          ${className}
-        `}
+        className={cn(
+          "w-full",
+          "rounded-brav-md",
+          "border",
+          "bg-white",
+          "px-4",
+          "py-3",
+          "text-sm",
+          "text-brav-foreground",
+          "outline-none",
+          "transition",
+          "focus:border-brav-primary",
+          "focus:ring-2",
+          "focus:ring-brav-primary/10",
+          error ? "border-brav-error" : "border-brav-border",
+          className,
+        )}
         {...props}
       >
         {options.map((option) => (

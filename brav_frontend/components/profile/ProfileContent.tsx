@@ -9,6 +9,7 @@ import ProfileAlert from "./ProfileAlert";
 import AccountInfoForm from "./AccountInfoForm";
 import ProfileInfoForm from "./ProfileInfoForm";
 import DeleteAccountSection from "./DeleteAccountSection";
+import AdminProductsSection from "./AdminProductsSection";
 
 interface ProfileMessage {
   text: string;
@@ -54,6 +55,8 @@ export default function ProfileContent() {
         <ProfileInfoForm
           onMessage={handleMessage}
         />
+
+        <AdminProductsSection />
 
         <DeleteAccountSection
           onDeleted={logout}

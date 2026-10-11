@@ -8,7 +8,7 @@ from products.serializers import (
     ProductImageSerializer,
     InventoryLogSerializer,
 )
-from brav_core.permissions import IsAdminOrReadOnly
+from brav_core.permissions import IsAdminOrReadOnly, IsOwnerOrAdmin
 
 
 @extend_schema_view(
