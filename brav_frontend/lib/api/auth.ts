@@ -257,10 +257,6 @@ export async function logoutUser(
 
 // @/lib/api/auth.ts
 
-export interface TestApiData {
-  message: string;
-  role: string;
-}
 
 // lib/api/auth.ts
 

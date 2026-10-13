@@ -18,14 +18,13 @@ export function startGoogleLogin() {
 
   sessionStorage.setItem("google_oauth_state", state);
 
-  const params = new URLSearchParams({
-    client_id: GOOGLE_CLIENT_ID,
-    redirect_uri: GOOGLE_REDIRECT_URI,
-    response_type: "code",
-    scope: "openid email profile",
-    state,
-    prompt: "select_account",
-  });
+  const params = new URLSearchParams();
+  params.set("client_id", GOOGLE_CLIENT_ID!);
+  params.set("redirect_uri", GOOGLE_REDIRECT_URI!);
+  params.set("response_type", "code");
+  params.set("scope", "openid email profile");
+  params.set("state", state);
+  params.set("prompt", "select_account");
 
   window.location.href =
     `${GOOGLE_AUTHORIZATION_ENDPOINT}?${params.toString()}`;
