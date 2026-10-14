@@ -30,11 +30,11 @@ export default function ProductForm({
   const defaultName = initial?.name || "";
   const defaultSlug = initial?.slug || defaultName.toLowerCase().replace(/\s+/g, "-");
   const defaultDescription = initial?.description || "";
-  const defaultPrice = (initial?.price ?? "0") as string;
+  const defaultPrice = initial?.price ?? "0";
   const defaultCategory = initial?.category || "";
   const defaultStatus = initial?.status || "active";
   const defaultImageUrl = initial?.image_url || "";
-  const defaultStockQuantity = (initial?.stock_quantity ?? "") as string;
+  const defaultStockQuantity = initial?.stock_quantity ?? "";
   const defaultSku = initial?.sku || "";
 
   const [name, setName] = useState(defaultName);
@@ -42,7 +42,7 @@ export default function ProductForm({
   const [description, setDescription] = useState(defaultDescription);
   const [price, setPrice] = useState(defaultPrice);
   const [category, setCategory] = useState(defaultCategory);
-  const [status, setStatus] = useState<ProductStatusEnum>(defaultStatus as ProductStatusEnum);
+  const [status, setStatus] = useState<ProductStatusEnum>(defaultStatus);
   const [imageUrl, setImageUrl] = useState(defaultImageUrl);
   const [stockQuantity, setStockQuantity] = useState(defaultStockQuantity);
   const [sku, setSku] = useState(defaultSku);
@@ -79,7 +79,7 @@ export default function ProductForm({
       name,
       slug: slug || name.toLowerCase().replace(/\s+/g, "-"),
       description,
-      price: finalPrice as string,
+      price: finalPrice,
       status,
       stock_quantity: finalStockQty,
       sku: sku || "",

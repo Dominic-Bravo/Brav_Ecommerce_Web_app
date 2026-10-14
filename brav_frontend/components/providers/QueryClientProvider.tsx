@@ -12,7 +12,7 @@ import type { ReactNode } from "react";
  * - gcTime: 10 minutes (10 * 60 * 1000)
  * - refetchOnWindowFocus: false (strictly locked)
  */
-const queryClient = new QueryClient({
+export const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       staleTime: 5 * 60 * 1000,

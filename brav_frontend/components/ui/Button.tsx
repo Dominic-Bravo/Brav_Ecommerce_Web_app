@@ -6,7 +6,7 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   children: ReactNode;
   variant?: "primary" | "secondary";
   fullWidth?: boolean;
-  size?: "sm" | "md";
+  size?: "sm" | "md" | "lg";
 }
 
 export default function Button({
@@ -23,14 +23,15 @@ export default function Button({
   const sizes = {
     sm: "px-3 py-1.5 text-xs",
     md: "px-5 py-3 text-sm",
+    lg: "px-6 py-4 text-base",
   };
 
   const variants = {
     primary:
-      "bg-brav-primary text-white hover:bg-brav-primary-hover",
+      "bg-brand-accent text-brand-primary hover:bg-brand-accent-hover",
 
     secondary:
-      "bg-brav-secondary text-brav-foreground hover:bg-brav-secondary-hover",
+      "border border-ui-border bg-white text-brand-primary hover:bg-ui-bg-muted",
   };
 
   return (

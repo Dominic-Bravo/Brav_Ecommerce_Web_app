@@ -39,7 +39,7 @@ export default function GoogleLoginButton({
   }
 
   const baseClasses =
-    "inline-flex items-center justify-center gap-2 rounded-brav-md border border-brav-border bg-white px-4 py-2 text-sm font-medium text-brav-text transition-all disabled:cursor-not-allowed disabled:opacity-50";
+    "inline-flex items-center justify-center gap-2 rounded-brav-md border border-ui-border bg-white px-4 py-2 text-sm font-medium text-brand-primary transition-all disabled:cursor-not-allowed disabled:opacity-50";
 
   const sizeClasses = {
     default: "px-4 py-2",
@@ -48,9 +48,9 @@ export default function GoogleLoginButton({
   };
 
   const variantClasses = {
-    default: "bg-white text-brav-text hover:bg-gray-50",
-    text: "bg-transparent text-brav-foreground hover:bg-brand-secondary/10",
-    outline: "bg-transparent text-brav-foreground hover:bg-brand-secondary/10",
+    default: "bg-white text-brand-primary hover:bg-ui-bg-muted",
+    text: "bg-transparent text-brand-secondary hover:bg-brand-accent/10",
+    outline: "bg-transparent text-brand-secondary hover:bg-brand-accent/10",
   };
 
   return (

@@ -26,7 +26,7 @@ export default function Select({
     <div className="space-y-2">
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-brav-foreground"
+        className="block text-sm font-medium text-brand-primary"
       >
         {label}
       </label>
@@ -41,13 +41,13 @@ export default function Select({
           "px-4",
           "py-3",
           "text-sm",
-          "text-brav-foreground",
+          "text-brand-foreground",
           "outline-none",
           "transition",
-          "focus:border-brav-primary",
+          "focus:border-brand-accent",
           "focus:ring-2",
-          "focus:ring-brav-primary/10",
-          error ? "border-brav-error" : "border-brav-border",
+          "focus:ring-brand-accent/10",
+          error ? "border-ui-danger" : "border-brav-border",
           className,
         )}
         {...props}
@@ -63,7 +63,7 @@ export default function Select({
       </select>
 
       {error && (
-        <p className="text-sm text-brav-error">
+        <p className="text-sm text-ui-danger">
           {error}
         </p>
       )}

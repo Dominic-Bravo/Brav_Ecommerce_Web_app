@@ -28,19 +28,41 @@ class IsCustomerUserRole(BasePermission):
         )
 
 
+# class IsAdminOrReadOnly(BasePermission):
+#     """
+#     Allows read-only access (GET, HEAD, OPTIONS) to any authenticated user,
+#     but write actions (POST, PUT, PATCH, DELETE) require an Admin role.
+#     """
+#     def has_permission(self, request, view):
+#         if not (request.user and request.user.is_authenticated):
+#             return False
+            
+#         if request.method in SAFE_METHODS:
+#             return True
+            
+#         return bool(request.user.role == 'admin' or request.user.is_staff or request.user.is_superuser)
+
+# common/permissions.py
 class IsAdminOrReadOnly(BasePermission):
     """
-    Allows read-only access (GET, HEAD, OPTIONS) to any authenticated user,
-    but write actions (POST, PUT, PATCH, DELETE) require an Admin role.
+    Allows read-only access (GET, HEAD, OPTIONS) to ANYONE (including unauthenticated guests),
+    but write actions (POST, PUT, PATCH, DELETE) require an Admin role, Staff, or Superuser.
     """
     def has_permission(self, request, view):
-        if not (request.user and request.user.is_authenticated):
-            return False
-            
+        # 1. Allow read-only/safe methods for everyone (guests and logged-in users alike)
         if request.method in SAFE_METHODS:
             return True
             
-        return bool(request.user.role == 'admin' or request.user.is_staff or request.user.is_superuser)
+        # 2. For write methods, block unauthenticated users
+        if not (request.user and request.user.is_authenticated):
+            return False
+            
+        # 3. Require admin, staff, or superuser status for modifications
+        return bool(
+            getattr(request.user, 'role', None) == 'admin' 
+            or request.user.is_staff 
+            or request.user.is_superuser
+        )
 
 
 class IsOwnerOrAdmin(BasePermission):

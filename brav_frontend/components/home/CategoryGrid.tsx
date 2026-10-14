@@ -8,16 +8,16 @@ export default function CategoryGrid() {
 
   if (isLoading) {
     return (
-      <section className="py-16">
-        <div className="mx-auto max-w-7xl px-4">
-          <h2 className="mb-8 text-3xl font-semibold text-brand-foreground">
+      <section className="section-spacing">
+        <div className="page-container">
+          <h2 className="section-heading mb-8">
             Shop by Category
           </h2>
           <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
             {[1, 2, 3, 4, 5, 6].map((i) => (
               <div
                 key={i}
-                className="rounded-md border border-brand-border bg-brand-secondary p-4"
+                className="skeleton-line aspect-square rounded-brav-md"
               />
             ))}
           </div>
@@ -27,25 +27,25 @@ export default function CategoryGrid() {
   }
 
   return (
-    <section className="py-16">
-      <div className="mx-auto max-w-7xl px-4">
-        <h2 className="mb-8 text-3xl font-semibold text-brand-foreground">
+    <section className="section-spacing">
+      <div className="page-container">
+        <h2 className="section-heading mb-8">
           Shop by Category
         </h2>
 
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-6">
+        <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 lg:grid-cols-6">
           {categories?.map((category: any) => (
             <Link
               key={category.id}
               href={`/products?category=${category.id}`}
-              className="group rounded-md border border-brand-border bg-white p-6 text-center transition-colors hover:border-brand-primary"
+              className="group flex flex-col items-center gap-3 rounded-brav-md border border-ui-border bg-ui-bg p-6 text-center transition-colors hover:border-brand-accent focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2 focus-visible:outline-none"
             >
-              <div className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-brand-secondary/20 text-brand-primary">
+              <span className="flex h-12 w-12 items-center justify-center rounded-full bg-ui-bg-muted text-brand-primary">
                 {category.name.charAt(0).toUpperCase()}
-              </div>
-              <h3 className="font-medium text-brand-foreground">
+              </span>
+              <span className="text-sm font-medium text-brand-primary">
                 {category.name}
-              </h3>
+              </span>
             </Link>
           ))}
         </div>

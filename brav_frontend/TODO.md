@@ -1,6 +1,6 @@
 # BRAV E-Commerce — Implementation Plan
 
-## Status: Phase 1 & 2 Complete | Phase 3–6 In Progress
+## Status: Phase 1–3 In Progress | Phase 4–6 Not Started
 
 ---
 
@@ -14,8 +14,8 @@
 ### 1.2 Create `store/useCartStore.ts` — Zustand Cart Store
 
 * [x] Implement lightweight Zustand state management for immediate cart UI updates.
-* [ ] Treat the backend as the source of truth for authenticated users' carts and prices.
-* [ ] Synchronize cart state with backend responses and invalidate relevant queries after mutations.
+* [x] Treat the backend as the source of truth for authenticated users' carts and prices.
+* [x] Synchronize cart state with backend responses and invalidate relevant queries after mutations.
 
 ### 1.3 Configure QueryClient Global Settings
 
@@ -27,6 +27,11 @@
 
 * [x] Replace `--color-brav-*` with `--color-brand-*`.
 * [x] Apply primary, secondary, accent, and UI background tokens.
+
+### 1.5 Sync Cart State with Backend
+
+* [x] Create `lib/api/cart.ts` with configured Orval cart endpoints and React Query hooks.
+* [x] Update `store/useCartStore.ts` to sync cart state with backend responses and invalidate queries after mutations.
 
 ---
 
@@ -70,89 +75,94 @@
 
 ### 3.2 Authentication Pages
 
-* [ ] Create or finalize the registration page at `app/register/page.tsx`.
-* [ ] Migrate or reuse the existing `app/signup/page.tsx` implementation.
-* [ ] Ensure routing is consistent and does not create duplicate registration pages.
-* [ ] Implement the login page using the existing authentication API.
-* [ ] Validate forms and display useful error messages.
-* [ ] Redirect authenticated users to their intended destination after successful login when appropriate.
+* [x] Login page (`app/login/page.tsx`) and signup page (`app/signup/page.tsx`) exist with existing implementations.
+* [x] Auth UI updated to match main page design (`app/page.tsx`) and BRAV design tokens from `DESIGN.md`:
+  - Primary buttons: champagne gold (`--color-brand-accent`) with charcoal text (per DESIGN.md section 14)
+  - Form controls use `--color-brand-*` tokens for consistency
+  - Error messages use `--color-ui-danger`/`--color-ui-danger-bg`
+  - Brand panel in auth layout uses `--color-brand-accent` for primary actions
+* [x] Form validation and error messages already implemented
+* [x] Redirect logic in place (login → `/dashboard`, signup redirects appropriately)
+* [x] Routing consistent (no duplicate registration pages)
 
 ### 3.3 Public Product Listing (`app/products/page.tsx`)
 
-* [ ] Create the public product catalog.
-* [ ] Allow authenticated and unauthenticated visitors to browse active products.
-* [ ] Display product images, names, prices, categories, and availability.
-* [ ] Support product search.
-* [ ] Support category filtering.
-* [ ] Support pagination.
-* [ ] Add loading, empty, and error states.
-* [ ] Use the existing Orval-generated product hooks where available.
-* [ ] Ensure product listing does not require authentication.
+* [x] Create the public product catalog.
+* [x] Allow authenticated and unauthenticated visitors to browse active products.
+* [x] Display product images, names, prices, categories, and availability.
+* [x] Support product search.
+* [x] Support category filtering.
+* [ ] Support pagination — pending backend implementation (planned for later).
+* [x] Add loading, empty, and error states.
+* [x] Use the existing Orval-generated product hooks where available.
+* [x] Ensure product listing does not require authentication.
 
 ### 3.4 Product Details (`app/products/[id]/page.tsx`)
 
-* [ ] Create the dynamic product details page.
-* [ ] Display product images, descriptions, prices, categories, and stock availability.
-* [ ] Allow guests to view product details without authentication.
-* [ ] Add an Add to Cart action.
-* [ ] If a guest attempts to add an item to the cart, direct them to login or registration.
-* [ ] Preserve the intended destination so the user can return to the product after authentication.
-* [ ] Require a successful backend operation before treating an item as added to the cart.
+* [x] Create the dynamic product details page.
+* [x] Display product images, descriptions, prices, categories, and stock availability.
+* [x] Allow guests to view product details without authentication.
+* [x] Add an Add to Cart action.
+* [x] If a guest attempts to add an item to the cart, direct them to login or registration.
+* [x] Preserve the intended destination so the user can return to the product after authentication.
+* [x] Require a successful backend operation before treating an item as added to the cart.
 
 ### 3.5 Cart (`app/cart/page.tsx`)
 
-* [ ] Create the shopping cart page.
-* [ ] Require authentication to access the customer's cart.
-* [ ] Display cart items from the authenticated user's backend cart.
-* [ ] Use Zustand for responsive UI state where appropriate.
-* [ ] Allow quantity updates and item removal.
-* [ ] Display item subtotals, total item count, and cart subtotal.
-* [ ] Validate quantities and availability using backend responses.
-* [ ] Handle empty cart and API error states.
+* [x] Create the shopping cart page.
+* [x] Require authentication to access the customer's cart.
+* [x] Display cart items from the authenticated user's backend cart.
+* [x] Use Zustand for responsive UI state where appropriate.
+* [x] Allow quantity updates and item removal.
+* [x] Display item subtotals, total item count, and cart subtotal.
+* [x] Validate quantities and availability using backend responses.
+* [x] Handle empty cart and API error states.
 
 ### 3.6 Checkout (`app/checkout/page.tsx`)
 
-* [ ] Create a single-page checkout form.
-* [ ] Require authentication before accessing checkout.
-* [ ] Collect shipping information:
+* [x] Create a single-page checkout form.
+* [x] Require authentication before accessing checkout.
+* [x] Collect shipping information:
 
   * Full name
   * Phone number
   * Street address
   * City
   * Postal code
-* [ ] Display an order summary.
-* [ ] Submit checkout requests to the backend.
-* [ ] Let the backend calculate the authoritative order total.
-* [ ] Handle insufficient stock and validation errors.
-* [ ] Display confirmation after successful order creation.
+* [x] Display an order summary.
+* [x] Submit checkout requests to the backend.
+* [x] Let the backend calculate the authoritative order total.
+* [x] Handle insufficient stock and validation errors.
+* [x] Display confirmation after successful order creation.
 
 ### 3.7 Orders History (`app/orders/page.tsx`)
 
-* [ ] Create the customer's order history page.
-* [ ] Require authentication.
-* [ ] Display only the authenticated customer's orders.
-* [ ] Show order number, date, total, and status.
-* [ ] Include useful loading, empty, and error states.
+* [x] Create the customer's order history page.
+* [x] Require authentication.
+* [x] Display only the authenticated customer's orders.
+* [x] Show order number, date, total, and status.
+* [x] Include useful loading, empty, and error states.
 
 ### 3.8 Order Details (`app/orders/[id]/page.tsx`)
 
-* [ ] Create the dynamic order details page.
-* [ ] Require authentication.
-* [ ] Display order items, quantities, prices, totals, shipping information, and status.
-* [ ] Handle missing orders and unauthorized access.
-* [ ] Never assume that hiding an order link prevents unauthorized access; the backend must enforce ownership.
+* [x] Create the dynamic order details page.
+* [x] Require authentication.
+* [x] Display order items, quantities, prices, totals, shipping information, and status.
+* [x] Handle missing orders and unauthorized access.
+* [x] Never assume that hiding an order link prevents unauthorized access; the backend must enforce ownership.
 
 ### 3.9 Authentication-Aware Actions and Routing
 
-* [ ] Allow guests to browse public pages freely.
-* [ ] Require authentication for cart operations, checkout, order placement, order history, and profile management.
-* [ ] Redirect unauthenticated users to login or registration when they attempt a protected action.
-* [ ] Provide a clear explanation when authentication is required.
-* [ ] Preserve the intended destination using a validated internal return path.
-* [ ] Use `<ProtectedRoute>` for protected pages.
-* [ ] Handle expired authentication without creating redirect loops.
-* [ ] Keep backend permissions as the actual security boundary.
+* [x] Allow guests to browse public pages freely.
+* [x] Require authentication for cart operations, checkout, order placement, order history, and profile management.
+* [x] Redirect unauthenticated users to login or registration when they attempt a protected action.
+* [x] Provide a clear explanation when authentication is required.
+* [x] Preserve the intended destination using a validated internal return path.
+* [x] Use `<ProtectedRoute>` for protected pages.
+* [x] Handle expired authentication without creating redirect loops.
+* [x] Keep backend permissions as the actual security boundary.
+
+> **Fixed:** Added `<ProtectedRoute>` wrapper to `app/orders/[id]/page.tsx`. Added `<Can permission="access_admin">` guards to all admin pages (`app/admin/dashboard/page.tsx`, `app/admin/products/page.tsx`, `app/admin/categories/page.tsx`).
 
 ---
 
@@ -218,15 +228,15 @@
 
 * [x] Fix `components/profile/Can.tsx` import.
 * [x] Fix imports in admin category/product components.
-* [ ] Fix `AccountInfoForm.tsx` role type issues.
+* [x] Fix `AccountInfoForm.tsx` role type issues.
 
 ### 5.2 Fix Product Components
 
-* [ ] Fix `ProductCard.tsx` Button component props.
-* [ ] Fix `ProductForm.tsx` Product and SKU imports/types.
-* [ ] Fix `CategoryForm.tsx` Category import.
-* [ ] Verify product cards work for unauthenticated visitors.
-* [ ] Ensure Add to Cart invokes the authentication flow for guests.
+* [x] Fix `ProductCard.tsx` Button component props.
+* [x] Fix `ProductForm.tsx` Product and SKU imports/types.
+* [x] Fix `CategoryForm.tsx` Category import.
+* [x] Verify product cards work for unauthenticated visitors.
+* [x] Ensure Add to Cart invokes the authentication flow for guests.
 
 ### 5.3 Fix UI Components
 

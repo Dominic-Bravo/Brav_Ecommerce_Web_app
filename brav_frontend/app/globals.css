@@ -2,60 +2,552 @@
 
 @theme {
   /* ================================
-     BRAV COLORS (per CLAUDE.md)
+     BRAV COLOR TOKENS (per DESIGN.md — 60/30/10)
+     --color-brand-* = primary brand tokens
+     --color-ui-*    = neutral UI tokens
      ================================ */
 
-  --color-brand-primary: #4f46e5;
-  --color-brand-primary-hover: #4338ca;
+  /* 30% — Structure & typography: deep charcoal + muted grays */
+  --color-brand-primary: #111827;
+  --color-brand-primary-hover: #1F2937;
+  --color-brand-secondary: #6B7280;
+  --color-brand-secondary-hover: #4B5563;
+  --color-brand-muted: #9CA3AF;
 
-  --color-brand-secondary: #0f172a;
-  --color-brand-secondary-hover: #1e293b;
+  /* 10% — Accent: muted champagne gold (purchase actions, selected states) */
+  --color-brand-accent: #C5A880;
+  --color-brand-accent-hover: #B3966E;
 
-  --color-brand-accent: #f59e0b;
+  /* 60% — Main surfaces: white + soft neutral */
+  --color-ui-bg: #FFFFFF;
+  --color-ui-bg-muted: #F9FAFB;
 
-  --color-ui-bg: #ffffff;
-  --color-ui-bg-muted: #f5f5f5;
+  /* Borders, dividers, input outlines */
+  --color-ui-border: #E5E7EB;
+  --color-ui-border-focus: #C5A880;
 
-  --color-brand-border: #e5e5e5;
+  /* Status (always paired with text/icon — never color alone) */
+  --color-ui-danger: #B91C1C;
+  --color-ui-success: #166534;
+  --color-ui-warning: #92400E;
+  --color-ui-neutral-text: #4B5563;
 
-  --color-brand-error: #dc2626;
-  --color-brand-success: #16a34a;
+  --color-ui-danger-bg: #FEF2F2;
+  --color-ui-success-bg: #ECFDF5;
+  --color-ui-warning-bg: #FFFBEB;
 
-  --color-brand-muted: #737373;
-  --color-brand-foreground: #111111;
+  /* Legacy brand colors needed for utility classes used in @apply */
+  --color-brand-foreground: #111827;
+  --color-brand-danger: #B91C1C;
+  --color-brand-success: #166534;
+  --color-brand-border: #E5E7EB;
 
   /* ================================
      BRAV TYPOGRAPHY
+     Editorial pairing: sans-serif for interface text,
+     elegant serif for selected brand headlines / product titles.
+     Register the actual font files via next/font in layout.tsx,
+     then reference these CSS variables there.
      ================================ */
+  --font-sans: "Inter", ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  --font-serif: "Playfair Display", Georgia, Cambria, "Times New Roman", Times, serif;
 
-  --text-brav-title: 2.25rem;
-  --text-brav-heading: 1.5rem;
-  --text-brav-body: 1rem;
-  --text-brav-small: 0.875rem;
+  /* Brand scale (keeps to one or two families per page) */
+  --text-brand-title: 2.25rem; /* desktop editorial headline */
+  --text-brand-heading: 1.5rem; /* section heading */
+  --text-brand-body: 1rem; /* body */
+  --text-brand-small: 0.875rem; /* small text */
 
   /* ================================
-     BRAV RADIUS
+     BRAV SPACING / SHADOW SCALE
+     Shadows used sparingly (floating menus, dialogs, sticky elements only).
      ================================ */
+  --shadow-brand-xs: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-brand-sm: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-brand-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-brand-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-brand-dialog: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
 
+  /* ================================
+     BRAV CORNER-RADIUS SCALE
+     Consistent scale across the site.
+     ================================ */
   --radius-brav-sm: 0.375rem;
   --radius-brav-md: 0.5rem;
   --radius-brav-lg: 0.75rem;
+  --radius-brav-full: 9999px;
 }
 
-/* Tailwind CSS v4 custom utility class mapping for legacy brav-* tokens */
+/* ================================
+   BACKWARD-COMPATIBILITY ALIASES
+   Existing UI code may still reference --color-brand-* for border/error/success.
+   Keep them in sync with the canonical --color-ui-* tokens so the palette
+   always changes in one place.
+   ================================ */
+:root {
+  --color-brand-border: var(--color-ui-border, #E5E7EB);
+  --color-brand-error: var(--color-ui-danger, #B91C1C);
+  --color-brand-success: var(--color-ui-success, #166534);
+  --color-brand-foreground: var(--color-brand-primary, #111827);
+}
+
+/* Tailwind v4 custom utility class mapping for legacy brav-* tokens */
 .bg-brav-primary { background-color: var(--color-brand-primary); }
 .bg-brav-primary-hover { background-color: var(--color-brand-primary-hover); }
 .bg-brav-secondary { background-color: var(--color-ui-bg-muted); }
 .bg-brav-secondary-hover { background-color: var(--color-brand-secondary-hover); }
 .bg-brav-background { background-color: var(--color-ui-bg); }
+.bg-brav-muted { background-color: var(--color-ui-bg-muted); }
+.bg-brav-accent { background-color: var(--color-brand-accent); }
+.bg-brav-danger { background-color: var(--color-ui-danger); }
+.bg-brav-success { background-color: var(--color-ui-success); }
+.bg-brav-danger-bg { background-color: var(--color-ui-danger-bg); }
+.bg-brav-success-bg { background-color: var(--color-ui-success-bg); }
+.bg-brav-warning-bg { background-color: var(--color-ui-warning-bg); }
 .text-brav-foreground { color: var(--color-brand-foreground); }
 .text-brav-heading { color: var(--color-brand-secondary); }
 .text-brav-muted { color: var(--color-brand-muted); }
 .text-brav-primary { color: var(--color-brand-primary); }
-.text-brav-error { color: var(--color-brand-error); }
+.text-brav-secondary { color: var(--color-brand-secondary); }
+.text-brav-danger { color: var(--color-ui-danger); }
+.text-brav-success { color: var(--color-ui-success); }
+.text-brav-neutral { color: var(--color-ui-neutral-text); }
+.text-brav-accent { color: var(--color-brand-accent); }
 .border-brav-border { border-color: var(--color-brand-border); }
 .border-brav-primary { border-color: var(--color-brand-primary); }
 .rounded-brav-sm { border-radius: var(--radius-brav-sm); }
 .rounded-brav-md { border-radius: var(--radius-brav-md); }
 .rounded-brav-lg { border-radius: var(--radius-brav-lg); }
 .focus\:border-brav-primary:focus { border-color: var(--color-brand-primary); }
+
+/* ================================
+   BASE / LAYOUT
+   ================================ */
+
+/* Main content container — aligns to shared content edge and gutters */
+.page-container {
+  @apply mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8 xl:px-12;
+}
+
+/* Generous vertical rhythm between sections */
+.section-spacing {
+  @apply py-16;
+}
+.section-spacing-sm {
+  @apply py-8;
+}
+.section-spacing-md {
+  @apply py-12;
+}
+
+/* Hero spacing — more breathing room per DESIGN.md */
+.hero-spacing {
+  @apply py-20;
+}
+
+/* ================================
+   TYPOGRAPHY (per DESIGN.md section 3)
+   Clear hierarchy: eyebrow / metadata -> headings -> body -> price
+   ================================ */
+
+/* Eyebrow / metadata — uppercase, tight letter-spacing, used sparingly */
+.eyebrow {
+  @apply text-xs font-medium uppercase tracking-widest text-brand-secondary;
+}
+
+/* Hero heading: text-3xl on mobile up to lg:text-6xl */
+h1.hero-heading {
+  @apply text-3xl font-semibold text-brand-primary md:text-5xl lg:text-6xl leading-[1.1];
+}
+
+/* Section heading: text-2xl on mobile, md:text-3xl to md:text-4xl */
+.section-heading {
+  @apply text-2xl font-semibold text-brand-primary md:text-3xl;
+}
+.section-heading-md {
+  @apply text-3xl font-semibold text-brand-primary;
+}
+.section-heading-lg {
+  @apply text-4xl font-bold text-brand-primary;
+}
+
+/* Editorial (serif) variant of section headings — reserved for selected brand headlines */
+.section-heading-serif {
+  @apply font-serif font-medium text-brand-primary md:text-3xl;
+}
+
+/* Product title — text-base to text-lg */
+.product-title {
+  @apply text-base font-medium text-brand-primary md:text-lg;
+}
+
+/* Body — comfortable, readable, leading relaxed */
+.body-text {
+  @apply text-sm leading-relaxed text-brand-muted md:text-base md:leading-relaxed;
+}
+
+/* Price — compact; prominent display in larger weight/size */
+.price-inline {
+  @apply text-base font-medium text-brand-primary;
+}
+.price-prominent {
+  @apply text-lg font-medium text-brand-primary;
+}
+
+/* Form controls */
+.form-label {
+  @apply text-sm font-medium text-brand-primary;
+}
+.form-placeholder {
+  @apply text-sm text-brand-muted;
+}
+.form-helper {
+  @apply mt-1 text-sm text-brand-muted;
+}
+.form-error {
+  @apply mt-1 text-sm text-brand-danger;
+}
+
+/* ================================
+   BUTTONS (per DESIGN.md section 14)
+   Hierarchy: primary (champagne-gold, charcoal text) >
+   secondary (white/neutral, subtle border) >
+   tertiary (text) > destructive (danger)
+   Standard height ~44-48px.
+   ================================ */
+
+.btn-primary {
+  @apply rounded-brav-md bg-brand-accent px-5 py-2.5 text-sm font-medium text-brand-primary transition-colors
+         hover:bg-brand-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.btn-secondary {
+  @apply rounded-brav-md border border-ui-border bg-white px-5 py-2.5 text-sm font-medium text-brand-primary transition-colors
+         hover:bg-ui-bg-muted focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.btn-tertiary {
+  @apply inline-flex items-center rounded-brav-md px-3 py-2 text-sm font-medium text-brand-secondary transition-colors
+         hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.btn-ghost {
+  @apply inline-flex items-center rounded-brav-md px-3 py-2 text-sm font-medium text-brand-secondary transition-colors
+         hover:bg-ui-bg-muted hover:text-brand-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.btn-destructive {
+  @apply rounded-brav-md bg-brand-danger px-5 py-2.5 text-sm font-medium text-white transition-colors
+         hover:bg-red-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-600 focus-visible:ring-offset-2;
+}
+/* Button states shared across variants */
+.btn-disabled {
+  @apply cursor-not-allowed opacity-50;
+}
+.btn-loading {
+  @apply relative text-transparent;
+}
+.btn-loading::after {
+  @apply absolute inset-0 m-auto block h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent content-[""];
+}
+
+/* Icon-only button — comfortable hit area + accessible name */
+.btn-icon {
+  @apply flex h-11 w-11 items-center justify-center rounded-brav-md transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.btn-icon:hover {
+  @apply bg-ui-bg-muted;
+}
+
+/* ================================
+   FORM INPUTS (per DESIGN.md section 14)
+   Consistent height, border, radius, padding, focus treatment.
+   ================================ */
+
+.input {
+  @apply flex h-11 w-full rounded-brav-md border border-ui-border bg-white px-3 py-2 text-sm text-brand-primary placeholder:text-brand-secondary
+         transition-colors focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent disabled:cursor-not-allowed disabled:opacity-50;
+}
+.input-error {
+  @apply border-brand-danger focus:border-brand-danger focus:ring-brand-danger;
+}
+.input-lg {
+  @apply h-12 text-base;
+}
+.select {
+  @apply flex h-11 w-full rounded-brav-md border border-ui-border bg-white px-3 py-2 text-sm text-brand-primary
+         focus:outline-none focus:border-brand-accent focus:ring-1 focus:ring-brand-accent disabled:cursor-not-allowed disabled:opacity-50;
+}
+
+/* ================================
+   PRODUCT CARD & GRID (per DESIGN.md sections 7-8)
+   Image-led, consistent aspect-[4/5], neutral background,
+   light borders — NOT dashboard tiles.
+   ================================ */
+
+.product-grid {
+  @apply grid w-full grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4;
+}
+
+.product-card {
+  @apply flex flex-col overflow-hidden rounded-brav-md border border-ui-border bg-ui-bg;
+  transition-property: color, background-color, border-color, box-shadow;
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+/* Hover zoom + border accent — CSS-native, no Tailwind group utility needed */
+.product-card:hover {
+  border-color: var(--color-brand-accent);
+}
+
+.product-card-image-wrapper {
+  @apply aspect-[4/5] w-full overflow-hidden bg-ui-bg-muted;
+}
+
+.product-card-image {
+  @apply h-full w-full object-cover object-center;
+  transition-property: transform;
+  transition-duration: 500ms;
+  transition-timing-function: ease-out;
+}
+
+.product-card:hover .product-card-image {
+  transform: scale(1.05);
+}
+
+.product-card-content {
+  @apply flex flex-1 flex-col gap-1 p-4;
+}
+
+.product-card-title {
+  @apply text-base font-medium text-brand-primary md:text-lg;
+}
+
+.product-card-meta {
+  @apply text-xs text-brand-secondary;
+}
+
+.product-card-footer {
+  @apply mt-auto pt-2;
+}
+
+/* ================================
+   STATUS / STOCK BADGE (per DESIGN.md sections 7 & 11)
+   Text + icon + color — never color alone.
+   ================================ */
+
+.status-badge {
+  @apply inline-flex items-center gap-1.5 rounded-brav-full px-2.5 py-0.5 text-xs font-medium;
+}
+.status-badge-success {
+  @apply bg-ui-success-bg text-ui-success;
+}
+.status-badge-danger {
+  @apply bg-ui-danger-bg text-ui-danger;
+}
+.status-badge-warning {
+  @apply bg-ui-warning-bg text-ui-warning;
+}
+.status-badge-neutral {
+  @apply bg-ui-bg-muted text-brand-secondary-hover;
+}
+
+/* ================================
+   STOCK BADGE
+   ================================ */
+
+.stock-badge {
+  @apply inline-flex items-center gap-1.5 rounded-brav-full px-2.5 py-0.5 text-xs font-medium;
+}
+.stock-in-stock {
+  @apply bg-ui-success-bg text-ui-success;
+}
+.stock-low-stock {
+  @apply bg-ui-warning-bg text-ui-warning;
+}
+.stock-out-of-stock {
+  @apply bg-ui-bg-muted text-brand-secondary;
+}
+
+/* ================================
+   LOADING / SKELETON (per DESIGN.md sections 7 & 15)
+   Skeleton cards preserve the grid layout.
+   ================================ */
+
+.skeleton {
+  @apply animate-pulse rounded bg-ui-bg-muted;
+}
+.skeleton-card {
+  @apply flex flex-col gap-3 rounded-brav-md border border-ui-border bg-ui-bg p-4;
+}
+.skeleton-card-image {
+  @apply aspect-[4/5] w-full animate-pulse rounded bg-ui-bg-muted;
+}
+.skeleton-line {
+  @apply h-4 w-full animate-pulse rounded bg-ui-bg-muted;
+}
+.skeleton-line-short {
+  @apply h-4 w-2/3 animate-pulse rounded bg-ui-bg-muted;
+}
+.skeleton-line-long {
+  @apply h-4 w-5/6 animate-pulse rounded bg-ui-bg-muted;
+}
+.skeleton-circle {
+  @apply h-8 w-8 animate-pulse rounded-full bg-ui-bg-muted;
+}
+.skeleton-button {
+  @apply h-11 w-full animate-pulse rounded-brav-md bg-ui-bg-muted;
+}
+
+/* ================================
+   EMPTY / ERROR / STATE COMPONENTS
+   ================================ */
+
+.empty-state {
+  @apply flex flex-col items-center justify-center gap-4 py-16 text-center;
+}
+.empty-state-icon {
+  @apply mb-2 h-12 w-12 text-brand-secondary;
+}
+.empty-state-title {
+  @apply text-lg font-semibold text-brand-primary;
+}
+.empty-state-description {
+  @apply max-w-sm text-sm text-brand-secondary;
+}
+
+.error-state {
+  @apply flex flex-col items-center justify-center gap-3 py-16 text-center;
+}
+.error-state-title {
+  @apply text-lg font-semibold text-brand-primary;
+}
+.error-state-description {
+  @apply text-sm text-brand-secondary;
+}
+.error-state-icon {
+  @apply mb-2 h-12 w-12 text-ui-danger;
+}
+
+/* ================================
+   QUANTITY SELECTOR
+   ================================ */
+
+.quantity-selector {
+  @apply inline-flex h-11 items-center rounded-brav-md border border-ui-border;
+}
+.quantity-selector-input {
+  @apply h-11 w-12 border-0 bg-transparent p-0 text-center text-sm font-medium text-brand-primary focus:outline-none focus:ring-0;
+}
+.quantity-selector-button {
+  @apply flex h-11 w-10 items-center justify-center rounded-brav-md text-brand-primary transition-colors
+         hover:bg-ui-bg-muted focus:outline-none focus:ring-0 active:bg-ui-bg-muted disabled:opacity-50 disabled:hover:bg-transparent;
+}
+
+/* ================================
+   SPINNER / PROGRESS STATES (per DESIGN.md sections 9 & 10)
+   ================================ */
+
+.spinner {
+  @apply h-5 w-5 animate-spin rounded-full border-2 border-brand-secondary border-t-transparent;
+}
+.spinner-sm {
+  @apply h-4 w-4;
+}
+.spinner-lg {
+  @apply h-8 w-8 border-4;
+}
+
+.progress-label {
+  @apply text-sm font-medium text-brand-secondary;
+}
+
+/* ================================
+   NAVIGATION
+   ================================ */
+
+.nav-link {
+  @apply text-sm font-medium text-brand-primary transition-colors hover:text-brand-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+.nav-link-active {
+  @apply text-brand-accent;
+}
+
+/* ================================
+   ACCESSIBILITY
+   ================================ */
+
+/* Visible focus states for keyboard navigation — ring on brand-accent with offset */
+.focus-visible-ring {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-accent focus-visible:ring-offset-2;
+}
+/* Higher-contrast ring variant for small text */
+.focus-visible-ring-strong {
+  @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-primary focus-visible:ring-offset-2;
+}
+
+/* Minimum 44x44px touch targets for common interactive elements */
+.touch-target {
+  @apply min-h-[44px] min-w-[44px];
+}
+.touch-target-button {
+  @apply h-11; /* ~44px height for standard button */
+}
+
+/* Screen-reader only helper (keeps icon-only controls accessible) */
+.sr-only {
+  @apply absolute -m-px h-px w-px overflow-hidden border-0 p-0 leading-none text-transparent;
+}
+
+/* Dialog / dropdown elevation (shadows only on floating elements) */
+.modal-overlay {
+  @apply fixed inset-0 z-40 bg-black/40 transition-opacity;
+}
+.modal-content {
+  @apply relative z-50 w-full rounded-brav-lg bg-ui-bg p-6 shadow-brand-dialog max-md:max-w-md md:max-w-2xl;
+}
+
+/* Sticky bar elevation */
+.sticky-bar {
+  @apply sticky bottom-0 z-30 w-full border-t border-ui-border bg-ui-bg/95 px-4 py-3 backdrop-blur-sm;
+}
+
+/* ================================
+   MOTION (per DESIGN.md section 16)
+   Restrained transitions; respect prefers-reduced-motion.
+   ================================ */
+
+@starting-style {
+  .modal-content {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+}
+
+/* Global restrained transition baseline for UI controls */
+* {
+  transition-duration: 200ms;
+  transition-timing-function: ease-out;
+}
+
+/* Longer transitions reserved for images only */
+.transition-image {
+  @apply transition-transform duration-500 ease-out;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* ================================
+   UTILITIES
+   ================================ */
+
+/* Neutral image background / stable placeholder area */
+.image-placeholder {
+  @apply flex h-full w-full items-center justify-center bg-ui-bg-muted text-brand-secondary;
+}

@@ -7,12 +7,26 @@ First, run the development server:
 ```bash
 npm run dev
 # or
-yarn dev
-# or
 pnpm dev
+# or
+yarn dev
 # or
 bun dev
 ```
+
+**Development Commands:**
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint linting
+- `npm run type-check` - Run TypeScript type checking
+- `orval` - Generate/update Orval API client (if schema changes)
+
+**Notes:**
+- This project uses TanStack Query v5 for data fetching with Orval code generation
+- Authentication uses HttpOnly cookies and stateless access tokens via `lib/auth/AuthManager`
+- Cart state is managed with Zustand but synchronized with backend as source of truth
+- No test scripts are configured in package.json
 
 Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
 

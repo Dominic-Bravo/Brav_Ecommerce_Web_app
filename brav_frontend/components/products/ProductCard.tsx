@@ -95,7 +95,6 @@ export default function ProductCard({
                 size="sm"
                 onClick={() => onEdit?.(product)}
                 variant="secondary"
-                className="px-2 py-1 text-xs"
               >
                 Edit
               </Button>
@@ -105,7 +104,7 @@ export default function ProductCard({
                 size="sm"
                 onClick={() => onDelete?.(product)}
                 variant="secondary"
-                className="px-2 py-1 text-xs text-red-600 hover:bg-red-50"
+                className="text-red-600 hover:bg-red-50"
               >
                 Delete
               </Button>
@@ -118,7 +117,6 @@ export default function ProductCard({
               size="sm"
               onClick={handleAddToCart}
               disabled={isLoading}
-              className="px-3 py-1.5 text-xs"
             >
               {isLoading
                 ? "Adding..."

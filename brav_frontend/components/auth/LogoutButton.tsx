@@ -31,14 +31,16 @@ export default function LogoutButton() {
       disabled={isLoggingOut}
       className="
         rounded-brav-md
-        bg-brav-primary
+        border
+        border-ui-border
+        bg-white
         px-4
         py-2
         text-sm
         font-medium
-        text-white
+        text-brand-primary
         transition
-        hover:bg-brav-primary-hover
+        hover:bg-ui-bg-muted
         disabled:cursor-not-allowed
         disabled:opacity-50
       "

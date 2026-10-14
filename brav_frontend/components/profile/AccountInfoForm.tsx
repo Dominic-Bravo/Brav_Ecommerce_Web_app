@@ -24,7 +24,7 @@ export default function AccountInfoForm({
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
   const [phone, setPhone] = useState(user.phone || "");
-  const [role, setRole] = useState<UserRole>(user.role as UserRole);
+  const [role, setRole] = useState<UserRole>(user.role);
 
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -32,7 +32,7 @@ export default function AccountInfoForm({
     setFirstName(user.first_name);
     setLastName(user.last_name);
     setPhone(user.phone || "");
-    setRole(user.role as UserRole);
+    setRole(user.role);
   }, [user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {

@@ -7,7 +7,7 @@ version: 1.0.0
 # Todo Tracker Workflow
 
 ## Step 1: Read the Tracker
-Read the contents of the `TODO.md` file in the root directory.
+Read the contents of the `/TODO.md` file in the root directory.
 
 ## Step 2: Handle User Intent
 - **If the user typed `/todo` alone:** Output a clean, compact summary of the current phase and what tasks are currently unchecked.

@@ -15,11 +15,13 @@ import type { LoginFormData } from "@/types/auth";
 
 import { authManager } from "@/lib/auth/AuthManager";
 import { useAuth } from "@/context/AuthContext";
+import { useAuthReturnPath } from "./ProtectedRoute";
 
 import GoogleLoginButton from "@/components/auth/GoogleLoginButton";
 
 export default function LoginForm() {
   const router = useRouter();
+  const returnPath = useAuthReturnPath();
 
   const { setUser } = useAuth();
 
@@ -48,8 +50,8 @@ export default function LoginForm() {
       // user with AuthContext.
       setUser(response.user);
 
-      // Navigate to the protected dashboard.
-      router.replace("/dashboard");
+      // Navigate to the intended destination or dashboard.
+      router.replace(returnPath);
     } catch (error) {
       console.error("Login failed:", error);
 
@@ -95,7 +97,7 @@ export default function LoginForm() {
         <div className="mt-2 text-right">
           <Link
             href="/forgot-password"
-            className="text-sm font-medium hover:underline"
+            className="text-sm font-medium text-brand-secondary hover:text-brand-accent"
           >
             Forgot password?
           </Link>
@@ -103,7 +105,7 @@ export default function LoginForm() {
       </div>
 
       {serverError && (
-        <div className="rounded-brav-md bg-red-50 p-3 text-sm text-brav-error">
+        <div className="rounded-brav-md bg-ui-danger-bg p-3 text-sm text-ui-danger">
           {serverError}
         </div>
       )}
@@ -123,8 +125,7 @@ export default function LoginForm() {
       </div>
 
       <p className="text-center text-sm text-brav-muted">
-        Don't have an account?{" "}
-        <Link
+        Don&apos;t have an account? <Link
           href="/signup"
           className="font-medium hover:underline"
         >

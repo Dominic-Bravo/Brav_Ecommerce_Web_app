@@ -12,11 +12,11 @@ export default function AuthLayout({
   description,
 }: AuthLayoutProps) {
   return (
-    <main className="flex min-h-screen bg-brav-background">
+    <main className="flex min-h-screen bg-ui-bg">
       {/* Brand section */}
 
-      <section className="hidden flex-1 items-center justify-center bg-brav-primary p-12 lg:flex">
-        <div className="max-w-md text-white">
+      <section className="hidden flex-1 items-center justify-center bg-brand-accent p-12 lg:flex">
+        <div className="max-w-md text-brand-primary">
           <div className="mb-8">
             <span className="text-4xl font-bold tracking-tight">
               BRAV
@@ -27,7 +27,7 @@ export default function AuthLayout({
             Discover products you'll love.
           </h2>
 
-          <p className="mt-5 text-white/70">
+          <p className="mt-5 text-brand-secondary">
             Shop, discover, and experience BRAV.
           </p>
         </div>
@@ -38,17 +38,17 @@ export default function AuthLayout({
       <section className="flex w-full items-center justify-center px-6 py-12 lg:w-1/2">
         <div className="w-full max-w-md">
           <div className="mb-8 lg:hidden">
-            <span className="text-3xl font-bold tracking-tight">
+            <span className="text-3xl font-bold tracking-tight text-brand-primary">
               BRAV
             </span>
           </div>
 
           <div className="mb-8">
-            <h1 className="text-brav-heading font-bold">
+            <h1 className="text-brand-primary font-bold">
               {title}
             </h1>
 
-            <p className="mt-2 text-sm text-brav-muted">
+            <p className="mt-2 text-sm text-brand-muted">
               {description}
             </p>
           </div>
