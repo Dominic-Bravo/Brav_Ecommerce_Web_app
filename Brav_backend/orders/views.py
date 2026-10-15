@@ -19,7 +19,7 @@ from brav_core.permissions import IsAdminOrReadOnly
     list=extend_schema(summary="List Orders (User/Admin)", tags=["Orders"]),
     retrieve=extend_schema(summary="Retrieve Order Details", tags=["Orders"]),
 )
-class OrderViewSet(viewsets.ReadOnlyModelViewSet):
+class OrderViewSet(viewsets.ModelViewSet):
     """
     ViewSet for viewing orders. 
     Customers see only their own orders. Admins see all store orders.
@@ -32,6 +32,16 @@ class OrderViewSet(viewsets.ReadOnlyModelViewSet):
         if getattr(user, "role", None) == "admin" or user.is_staff:
             return Order.objects.all().prefetch_related("items__product")
         return Order.objects.filter(user=user).prefetch_related("items__product")
+
+    def perform_destroy(self, instance):
+        """
+        Optional: Custom logic before deletion.
+        For example, prevent customers from deleting an order if it's already 'shipped'.
+        """
+        # Example safety check:
+        # if not self.request.user.is_staff and instance.status == 'shipped':
+        #     raise serializers.ValidationError("Cannot delete a shipped order.")
+        instance.delete()
 
 
 class CheckoutAPIView(generics.CreateAPIView):

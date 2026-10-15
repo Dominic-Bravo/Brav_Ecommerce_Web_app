@@ -50,8 +50,13 @@ export default function LoginForm() {
       // user with AuthContext.
       setUser(response.user);
 
-      // Navigate to the intended destination or dashboard.
-      router.replace(returnPath);
+      // Redirect admin users to the admin dashboard
+      if (response.user.role === "admin") {
+        router.replace("/admin/dashboard");
+      } else {
+        // Navigate to the main page for regular users
+        router.replace("/");
+      }
     } catch (error) {
       console.error("Login failed:", error);
 

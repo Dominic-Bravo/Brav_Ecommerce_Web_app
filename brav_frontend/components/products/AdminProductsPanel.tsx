@@ -5,6 +5,7 @@ import ProductForm from "./ProductForm";
 import ProductCard from "./ProductCard";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { fetchProducts, deleteProduct, createProduct, patchProduct } from "@/lib/api/products";
 
 interface AdminProductsPanelProps {
@@ -48,10 +49,14 @@ export default function AdminProductsPanel({
     try {
       await deleteProduct(productId);
       setProducts(products.filter((p: any) => p.slug !== productId));
+      // Invalidate queries after mutation as per CLAUDE.md rules
+      queryClient.invalidateQueries({ queryKey: ["products"] });
     } catch (error) {
       console.error("Failed to delete product:", error);
     }
   };
+
+  const queryClient = useQueryClient();
 
   const handleSaveProduct = (data: any) => {
     if (editingProduct) {
@@ -88,6 +93,8 @@ export default function AdminProductsPanel({
       });
       setProducts([...products, data]);
     }
+    // Invalidate queries after mutations as per CLAUDE.md rules
+    queryClient.invalidateQueries({ queryKey: ["products"] });
     onProductAdded?.(data);
     setShowForm(false);
   };

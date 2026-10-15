@@ -4,7 +4,7 @@ import { useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 
-import { getCategories } from "@/api/generated/categories/categories";
+import { getCategoriesData } from "@/lib/api/categories";
 
 import type {
   Category,
@@ -34,9 +34,7 @@ export default function CategoryForm({
   const { data: categories, isLoading: isCategoriesLoading } = useQuery({
     queryKey: ["categories-form"],
     queryFn: async () => {
-      const categoriesResponse = await getCategories();
-      const response = await categoriesResponse.v1ProductsCategoriesList();
-      return response.data;
+      return getCategoriesData();
     },
     staleTime: 5 * 60 * 1000,
     gcTime: 10 * 60 * 1000,

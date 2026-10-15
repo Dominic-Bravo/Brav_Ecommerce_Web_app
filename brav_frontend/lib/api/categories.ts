@@ -9,7 +9,7 @@ import { authManager } from "@/lib/auth/AuthManager";
 
 import { getCategories } from "@/api/generated/categories/categories";
 
-import type { Category } from "@/api/generated/model";
+import type { Category, CategoryRequest, PatchedCategoryRequest } from "@/api/generated/model";
 
 // ─── Configured axios instance ────────────────────────────────────────────────
 
@@ -22,7 +22,7 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
 
 const baseURL = API_URL.replace(/\/api$/, "");
 
-const axiosInstance = axios.create({
+export const axiosInstance = axios.create({
   baseURL,
   headers: {
     Accept: "application/json",
@@ -76,6 +76,41 @@ export async function getCategoryBySlug(slug: string): Promise<Category> {
   return response.data;
 }
 
+/**
+ * Create a new category.
+ */
+export async function createCategory(data: CategoryRequest): Promise<Category> {
+  const categories = await getCategories(axiosInstance);
+  const response = await categories.v1ProductsCategoriesCreate(data);
+  return response.data;
+}
+
+/**
+ * Update a category (full replace).
+ */
+export async function updateCategory(slug: string, data: CategoryRequest): Promise<Category> {
+  const categories = await getCategories(axiosInstance);
+  const response = await categories.v1ProductsCategoriesUpdate(slug, data);
+  return response.data;
+}
+
+/**
+ * Partially update a category.
+ */
+export async function patchCategory(slug: string, data: PatchedCategoryRequest): Promise<Category> {
+  const categories = await getCategories(axiosInstance);
+  const response = await categories.v1ProductsCategoriesPartialUpdate(slug, data);
+  return response.data;
+}
+
+/**
+ * Delete a category.
+ */
+export async function deleteCategory(slug: string): Promise<void> {
+  const categories = await getCategories(axiosInstance);
+  await categories.v1ProductsCategoriesDestroy(slug);
+}
+
 // ─── React Query Custom Hooks ────────────────────────────────────────────────────
 
 import { useQuery } from "@tanstack/react-query";
@@ -105,5 +140,63 @@ export function useCategory(slug: string) {
       return category;
     },
     enabled: !!slug,
+  });
+}
+
+// ─── React Query Mutation Hooks ────────────────────────────────────────────────────
+
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+
+/**
+ * Hook for creating a category.
+ */
+export function useCreateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: createCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+/**
+ * Hook for updating a category.
+ */
+export function useUpdateCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ slug, data }: { slug: string; data: CategoryRequest }) =>
+      updateCategory(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+/**
+ * Hook for patching a category.
+ */
+export function usePatchCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: ({ slug, data }: { slug: string; data: PatchedCategoryRequest }) =>
+      patchCategory(slug, data),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
+  });
+}
+
+/**
+ * Hook for deleting a category.
+ */
+export function useDeleteCategory() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: deleteCategory,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["categories"] });
+    },
   });
 }

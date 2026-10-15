@@ -4,8 +4,11 @@ import { authManager } from "@/lib/auth/AuthManager";
 import { getOrders } from "@/api/generated/orders/orders";
 import { getAddresses } from "@/api/generated/addresses/addresses";
 
-import type { CheckoutRequest, Order } from "@/api/generated/model";
+import type { CheckoutRequest, Order, OrderStatusEnum } from "@/api/generated/model";
 import type { Address } from "@/types/address";
+
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import useCartStore from "@/store/useCartStore";
 
 // ─── Configured axios instance ────────────────────────────────────────────────
 
@@ -157,7 +160,30 @@ export async function submitCheckoutApi(
 
 // ─── React Query Hooks ───────────────────────────────────────────────────────
 
-import { useQuery } from "@tanstack/react-query";
+/**
+ * Hook for submitting checkout.
+ *
+ * Invalidates cart and orders queries on success
+ * and clears the local Zustand cart store.
+ */
+export function useCheckout() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: submitCheckoutApi,
+    onSuccess: () => {
+      // Invalidate cart queries to reflect cleared cart
+      queryClient.invalidateQueries({ queryKey: ["cart"] });
+      queryClient.invalidateQueries({ queryKey: ["cart", "items"] });
+      // Invalidate orders to fetch the newly created order
+      queryClient.invalidateQueries({ queryKey: ["orders"] });
+      // Clear local Zustand cart state
+      const { clearCart } = useCartStore.getState();
+      clearCart();
+    },
+  });
+}
+
+
 
 /**
  * Hook for fetching the user's orders.
@@ -170,7 +196,9 @@ export function useOrders() {
     queryFn: async () => {
       const ordersModule = getOrders(axiosInstance);
       const response = await ordersModule.v1OrdersList();
-      return response.data;
+      // Backend returns wrapped envelope: { data: Order[] }
+      const envelope = response.data as { data?: Order[] };
+      return Array.isArray(envelope.data) ? envelope.data : [];
     },
   });
 }
@@ -188,4 +216,63 @@ export function useOrder(id: string) {
     },
     enabled: !!id,
   });
+}
+
+/**
+ * Fetch all orders from the backend (admin view).
+ *
+ * Returns all orders regardless of user, for administrator dashboard/management.
+ */
+export async function fetchOrders(): Promise<any[]> {
+  try {
+    const ordersModule = getOrders(axiosInstance);
+    const response = await ordersModule.v1OrdersList();
+    // Backend wraps responses in { data: ... }
+    const envelope = response.data as { data?: any[] };
+    return envelope.data ?? (envelope as unknown as any[]);
+  } catch (error) {
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "Failed to fetch orders."
+    );
+  }
+}
+
+/**
+ * Update an order's status.
+ *
+ * Sends a PATCH request to the dedicated status update endpoint.
+ * The backend validates state transitions and returns the updated order.
+ *
+ * @param orderId - The order ID to update
+ * @param data - The status update data (e.g., { status: "shipped" })
+ */
+export async function updateOrderStatus(
+  orderId: string,
+  data: { status: OrderStatusEnum }
+): Promise<any> {
+  // Use dedicated status update endpoint: PATCH /api/v1/orders/{id}/update_status/
+  // This is a custom action on the Order ViewSet, not the standard PUT endpoint
+  // which only supports shipping_address and payment_method
+  try {
+    const response = await axiosInstance.patch(
+      `/api/v1/orders/${orderId}/update_status/`,
+      { status: data.status },
+      {
+        headers: {
+          Accept: "application/json",
+        },
+      }
+    );
+    const envelope = response.data as { data?: any };
+    return envelope.data ?? (envelope as unknown as any);
+  } catch (error: any) {
+    console.error("Order status update failed:", error.response?.status, error.response?.data);
+    throw new Error(
+      error instanceof Error
+        ? error.message
+        : "Failed to update order status."
+    );
+  }
 }

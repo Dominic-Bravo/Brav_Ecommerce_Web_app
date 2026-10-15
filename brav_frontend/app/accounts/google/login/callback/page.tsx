@@ -58,7 +58,12 @@ export default function GoogleCallbackPage() {
 
         setUser(response.user);
 
-        router.replace("/dashboard");
+        // Route based on user role
+        if (response.user.role === "admin") {
+          router.replace("/admin/dashboard");
+        } else {
+          router.replace("/");
+        }
       } catch (error) {
         setError(
           error instanceof Error

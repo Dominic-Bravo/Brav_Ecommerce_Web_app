@@ -49,9 +49,15 @@ export function AuthProvider({
 
   useEffect(() => {
     async function initializeAuth() {
+      // Restore access token from AuthManager if exists
+      const existingToken = authManager.getAccessToken();
+      if (existingToken) {
+        authManager.setAccessToken(existingToken);
+      }
+
       try {
         const response = await apiFetch(
-          "/v1/users/me/"
+          "/api/v1/users/me/"
         );
 
         if (!response.ok) {

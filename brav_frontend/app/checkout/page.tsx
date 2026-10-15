@@ -5,10 +5,9 @@ import { useRouter } from "next/navigation";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
 import { useAuth } from "@/context/AuthContext";
-import useCartStore from "@/store/useCartStore";
-import { getAddressesApi, submitCheckoutApi } from "@/lib/api/orders";
-import { useMutation } from "@tanstack/react-query";
 import { useCart } from "@/lib/api/cart";
+import useCartStore from "@/store/useCartStore";
+import { useCheckout, getAddressesApi } from "@/lib/api/orders";
 import Button from "@/components/ui/Button";
 import type { Address } from "@/types/address";
 import type {
@@ -61,14 +60,8 @@ export default function CheckoutPage() {
   const { data: cart, isLoading: cartIsLoading, error: cartError } = useCart();
   const { items: storeItems } = useCartStore();
 
-  // Checkout mutation
-  const { mutate, isPending } = useMutation<
-    Order,
-    Error,
-    CheckoutRequest
-  >({
-    mutationFn: submitCheckoutApi,
-  });
+  // Checkout mutation (invalidates cart + orders queries on success)
+  const { mutate, isPending } = useCheckout();
 
   // Format money
   const formatMoney = (amount: string | number) => {
@@ -209,8 +202,6 @@ export default function CheckoutPage() {
           payment_method: "",
           coupon_code: "",
         });
-        // Clear cart Zustand state
-        useCartStore.getState().clearCart();
       },
       onError: (err) => {
         // Show error to user
