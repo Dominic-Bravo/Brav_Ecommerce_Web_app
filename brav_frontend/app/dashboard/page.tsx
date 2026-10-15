@@ -1,7 +1,7 @@
 "use client";
 
 import ProtectedRoute from "@/components/auth/ProtectedRoute";
-import Can from "@/components/auth/Can";
+import { Can } from "@/components/auth/Can";
 import LogoutButton from "@/components/auth/LogoutButton";
 import { useAuth } from "@/context/AuthContext";
 

@@ -22,10 +22,18 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
+api_patterns = [
+    path('api/v1/users/', include('users.urls', namespace='users')),
+    path("api/v1/products/", include("products.urls", namespace='products')),
+    path("api/v1/cart/", include("cart.urls", namespace='cart')),
+    path("api/v1/orders/", include("orders.urls")),
+    path("api/v1/reviews/", include("reviews.urls")),
+]
+
 urlpatterns = [
     path('admin/', admin.site.urls),
-    path('api/v1/users/', include('users.urls', namespace='users')),
-
+     path('', include(api_patterns)), # Groups all modules neatly under /api/v1/
+    
 
     # OpenAPI 3 Schema & Swagger UI
     path('api/schema/', SpectacularAPIView.as_view(), name='schema'),

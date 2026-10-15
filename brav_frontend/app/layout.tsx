@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 
 import "./globals.css";
 import { AuthProvider } from "@/context/AuthContext";
+import AppProviders from "@/components/providers/QueryClientProvider";
+import CartProvider from "@/components/providers/CartProvider";
 
 export const metadata: Metadata = {
   title: "BRAV",
@@ -17,7 +19,9 @@ export default function RootLayout({
     <html lang="en">
       <body>
         <AuthProvider>
-          {children}
+          <CartProvider>
+            <AppProviders>{children}</AppProviders>
+          </CartProvider>
         </AuthProvider>
       </body>
     </html>

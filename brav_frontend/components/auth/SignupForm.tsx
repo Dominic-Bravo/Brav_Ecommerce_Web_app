@@ -139,7 +139,7 @@ export default function SignupForm() {
       {/* Server Error */}
 
       {serverError && (
-        <div className="rounded-brav-md bg-red-50 p-3 text-sm text-brav-error">
+        <div className="rounded-brav-md bg-ui-danger-bg p-3 text-sm text-ui-danger">
           {serverError}
         </div>
       )}

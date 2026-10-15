@@ -35,7 +35,7 @@ class Product(models.Model):
     category = models.ForeignKey(Category, on_delete=models.PROTECT, related_name="products")
     name = models.CharField(max_length=100)
     slug = models.SlugField(max_length=100, unique=True)
-    description = models.TextField()
+    description = models.TextField()    
     price = models.DecimalField(max_digits=10, decimal_places=2)
     stock_quantity = models.IntegerField(default=0)
     sku = models.CharField(max_length=50, unique=True)

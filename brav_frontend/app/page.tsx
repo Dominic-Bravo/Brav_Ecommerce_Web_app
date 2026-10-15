@@ -1,77 +1,80 @@
-import Image from "next/image";
+import Link from "next/link";
+import HeroSection from "@/components/home/HeroSection";
+import FeaturedProducts from "@/components/home/FeaturedProducts";
+import CategoryGrid from "@/components/home/CategoryGrid";
+import Navigation from "@/components/home/Navigation";
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert h-5 w-[100px]"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the{" "}
-            <code className="rounded bg-black/[.06] px-1.5 py-0.5 font-mono text-[0.9em] dark:bg-white/[.08]">
-              page.tsx
-            </code>{" "}
-            file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <main className="min-h-screen bg-ui-bg">
+      <Navigation />
+      <HeroSection />
+      <FeaturedProducts />
+      <CategoryGrid />
+
+      {/* Brand / story section — per DESIGN.md section 6, item 4 */}
+      <section className="section-spacing">
+        <div className="page-container">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <div>
+              <span className="eyebrow mb-4 block">About BRAV</span>
+              <h2 className="section-heading-serif mb-6">
+                Designed for those who appreciate
+                <br />
+                understated luxury
+              </h2>
+              <p className="body-text">
+                BRAV is a curated collection of timeless essentials. Every product
+                is selected for its balance of form, function, and lasting quality —
+                designed to be used every day, not just displayed.
+              </p>
+              <Link href="/products" className="btn-primary mt-6 inline-block">
+                Explore the Collection
+              </Link>
+            </div>
+            <div className="aspect-[4/5] overflow-hidden rounded-brav-lg bg-ui-bg-muted">
+              <div className="flex h-full w-full items-center justify-center text-brand-secondary">
+                <span className="text-sm">Brand imagery</span>
+              </div>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert h-[14px] w-4"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={14}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            test
-          </a>
+      </section>
+
+      {/* Trust / service highlights — per DESIGN.md section 6, item 5 */}
+      <section className="section-spacing bg-ui-bg-muted">
+        <div className="page-container">
+          <div className="grid grid-cols-1 gap-8 sm:grid-cols-3">
+            <div className="text-center">
+              <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-ui-bg text-brand-accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12L10 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <h3 className="mb-1 text-sm font-medium text-brand-primary">Free Shipping</h3>
+              <p className="text-xs text-brand-muted">On orders over $50</p>
+            </div>
+            <div className="text-center">
+              <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-ui-bg text-brand-accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12L10 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <h3 className="mb-1 text-sm font-medium text-brand-primary">Easy Returns</h3>
+              <p className="text-xs text-brand-muted">30-day return window</p>
+            </div>
+            <div className="text-center">
+              <span className="mb-3 inline-flex h-12 w-12 items-center justify-center rounded-full bg-ui-bg text-brand-accent">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M5 12L10 17L19 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                </svg>
+              </span>
+              <h3 className="mb-1 text-sm font-medium text-brand-primary">24/7 Support</h3>
+              <p className="text-xs text-brand-muted">Help when you need it</p>
+            </div>
+          </div>
         </div>
-      </main>
-    </div>
+      </section>
+    </main>
   );
 }

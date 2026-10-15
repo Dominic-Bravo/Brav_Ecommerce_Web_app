@@ -1,154 +1,126 @@
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
 import { authManager } from "@/lib/auth/AuthManager";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL;
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "";
+const baseURL = API_URL.replace(/\/api$/, "");
 
+/**
+ * Centralized Axios instance for all API calls.
+ * Handles:
+ * - Base URL stripping
+ * - Credentials (cookies) inclusion
+ * - Automatic Bearer token injection via AuthManager
+ * - Automatic 401 token refresh and request retrying
+ */
+export const axiosInstance = axios.create({
+  baseURL,
+  withCredentials: true,
+  headers: {
+    Accept: "application/json",
+  },
+});
+
+// ─── Request Interceptor: Inject Token ──────────────────────────────────────────
+
+axiosInstance.interceptors.request.use((config) => {
+  const accessToken = authManager.getAccessToken();
+  if (accessToken && config.headers) {
+    config.headers.Authorization = `Bearer ${accessToken}`;
+  }
+  return config;
+});
+
+// ─── Response Interceptor: Handle 401 & Refresh ──────────────────────────────────
 
 let refreshPromise: Promise<string> | null = null;
 
-export async function apiFetch(
-  endpoint: string,
-  options: RequestInit = {},
-  retry = true
-): Promise<Response> {
+axiosInstance.interceptors.response.use(
+  (response) => response,
+  async (error: AxiosError) => {
+    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
 
-  const accessToken =
-    authManager.getAccessToken();
+    // If the error is a 401 and we haven't retried this request yet
+    if (error.response?.status === 401 && originalRequest && !originalRequest._retry) {
+      originalRequest._retry = true;
 
-  const headers = new Headers(
-    options.headers
-  );
-
-  headers.set(
-    "Accept",
-    "application/json"
-  );
-
-  if (accessToken) {
-    headers.set(
-      "Authorization",
-      `Bearer ${accessToken}`
-    );
-  }
-
-  let response = await fetch(
-    `${API_URL}${endpoint}`,
-    {
-      ...options,
-      headers,
-      credentials: "include",
-    }
-  );
-
-  // Request succeeded.
-  if (response.status !== 401) {
-    return response;
-  }
-
-  // Prevent infinite retry loops.
-  if (!retry) {
-    authManager.clear();
-
-    return response;
-  }
-
-  try {
-
-    /*
-     * If several requests receive 401
-     * at the same time, only one refresh
-     * request will be sent.
-     */
-    if (!refreshPromise) {
-      refreshPromise =
-        authManager.refresh()
-          .finally(() => {
+      try {
+        // Ensure only one refresh request is in flight at a time
+        if (!refreshPromise) {
+          refreshPromise = authManager.refresh().finally(() => {
             refreshPromise = null;
           });
-    }
+        }
 
-    const newAccessToken =
-      await refreshPromise;
+        const newToken = await refreshPromise;
 
-    /*
-     * Retry the original request
-     * with the new access token.
-     */
-    const retryHeaders =
-      new Headers(options.headers);
+        // Update the failed request with the new token and retry
+        if (originalRequest.headers) {
+          originalRequest.headers.Authorization = `Bearer ${newToken}`;
+        }
 
-    retryHeaders.set(
-      "Accept",
-      "application/json"
-    );
-
-    retryHeaders.set(
-      "Authorization",
-      `Bearer ${newAccessToken}`
-    );
-
-    response = await fetch(
-      `${API_URL}${endpoint}`,
-      {
-        ...options,
-        headers: retryHeaders,
-        credentials: "include",
+        return axiosInstance(originalRequest);
+      } catch (refreshError) {
+        // If refresh fails, clear authentication state
+        authManager.clear();
+        return Promise.reject(refreshError);
       }
-    );
-
-    /*
-     * If the new token also fails,
-     * authentication is no longer valid.
-     */
-    if (response.status === 401) {
-      authManager.clear();
     }
 
-    return response;
+    // For any other error (or if retries failed), reject
+    return Promise.reject(error);
+  }
+);
 
-  } catch {
+// ─── Backward Compatibility Wrappers ──────────────────────────────────────────
 
-    authManager.clear();
+/**
+ * A wrapper around axiosInstance to maintain compatibility with existing code
+ * using the apiFetch/apiClient signature.
+ */
+export async function apiFetch<T = any>(
+  endpoint: string,
+  options: any = {}
+): Promise<Response> {
+  // Note: This returns a Response object to satisfy existing code expecting standard fetch behavior.
+  // This is a temporary bridge during the refactor.
+  try {
+    const response = await axiosInstance({
+      url: endpoint,
+      method: options.method || "GET",
+      data: options.body,
+      headers: options.headers,
+    });
 
-    return response;
+    // Simulate Response object
+    return new Response(JSON.stringify(response.data), {
+      status: response.status,
+      headers: { "Content-Type": "application/json" },
+    }) as unknown as Response;
+  } catch (error: any) {
+    // Simulate failed Response object
+    const status = error.response?.status || 500;
+    const message = error.response?.data?.detail || error.response?.data?.message || error.message || "Request failed";
+
+    return new Response(JSON.stringify({ detail: message }), {
+      status,
+      headers: { "Content-Type": "application/json" },
+    }) as unknown as Response;
   }
 }
 
-
+/**
+ * A wrapper around axiosInstance that returns the parsed data directly.
+ */
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: any = {}
 ): Promise<T> {
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-
-    credentials: "include",
-
-    headers: {
-      "Content-Type": "application/json",
-      ...options.headers,
-    },
+  const response = await axiosInstance({
+    url: endpoint,
+    method: options.method || "GET",
+    data: options.body,
+    headers: options.headers,
   });
 
-  let data: unknown = null;
-
-  try {
-    data = await response.json();
-  } catch {
-    data = null;
-  }
-
-  if (!response.ok) {
-    const errorData = data as {
-      detail?: string;
-      message?: string;
-    } | null;
-
-    throw new Error(
-      errorData?.detail ||
-        errorData?.message ||
-        `Request failed with status ${response.status}`
-    );
-  }
-
-  return data as T;
+  return response.data as T;
 }

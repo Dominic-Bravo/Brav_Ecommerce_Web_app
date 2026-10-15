@@ -1,8 +1,14 @@
 
+export interface TestApiData {
+  message: string;
+  role: string;
+}
+
 export interface UpdateUserPayload {
   first_name?: string;
   last_name?: string;
   phone?: string;
+  role?: UserRole;
 }
 
 export interface UpdateProfilePayload {
@@ -28,7 +34,7 @@ export interface User {
   first_name: string;
   last_name: string;
   phone: string;
-  role: string;
+  role: UserRole;
   is_active: boolean;
   created_at: string;
 }
@@ -62,4 +68,9 @@ export interface LoginResponse {
 
 export interface RefreshResponse {
   access: string;
+}
+
+export interface AuthTokens {
+  access: string;
+  refresh: string;
 }

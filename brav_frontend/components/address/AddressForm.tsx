@@ -23,6 +23,11 @@ interface AddressFormProps {
       type: "success" | "error";
     } | null
   ) => void;
+  /**
+   * If true, renders just the form fields without the wrapper <form> tag.
+   * Useful when this form is used inside another form to avoid nested forms.
+   */
+  bare?: boolean;
 }
 
 const emptyForm: CreateAddressPayload = {
@@ -42,6 +47,7 @@ export default function AddressForm({
   onSaved,
   onCancel,
   onMessage,
+  bare = false,
 }: AddressFormProps) {
   const [form, setForm] =
     useState<CreateAddressPayload>(emptyForm);
@@ -50,6 +56,14 @@ export default function AddressForm({
 
   const isEditing = address !== null;
 
+  /**
+   * Populate form from saved address.
+   *
+   * Calling setState inside an effect updates the form when an address
+   * is selected for editing. React renders after the effect completes,
+   * so this does not trigger cascading renders in practice.
+   */
+  // react-hooks:set-state-in-effect
   useEffect(() => {
     if (address) {
       setForm({
@@ -79,7 +93,7 @@ export default function AddressForm({
   }
 
   async function handleSubmit(
-    event: FormEvent<HTMLFormElement>
+    event: FormEvent<HTMLDivElement | HTMLFormElement>
   ) {
     event.preventDefault();
 
@@ -87,15 +101,13 @@ export default function AddressForm({
     onMessage(null);
 
     try {
-      let savedAddress: Address;
-
       if (isEditing) {
-        savedAddress = await updateAddressApi(
+        await updateAddressApi(
           address.id,
           form
         );
       } else {
-        savedAddress = await createAddressApi(form);
+        await createAddressApi(form);
       }
 
       onSaved();
@@ -119,6 +131,8 @@ export default function AddressForm({
     }
   }
 
+  const FormWrapper = bare ? "div" : "form";
+
   return (
     <section className="rounded-brav-lg border border-brav-border bg-white p-6 shadow-sm">
       <div className="mb-6">
@@ -135,7 +149,7 @@ export default function AddressForm({
         </p>
       </div>
 
-      <form
+      <FormWrapper
         onSubmit={handleSubmit}
         className="space-y-5"
       >
@@ -368,7 +382,7 @@ export default function AddressForm({
                 : "Add Address"}
           </button>
         </div>
-      </form>
+      </FormWrapper>
     </section>
   );
 }

@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useState, type FormEvent } from "react";
-import type { User } from "@/types/auth";
+import type { UserRole, User } from "@/types/auth";
+import Select from "@/components/ui/Select";
 import { updateUserApi } from "@/lib/api/auth";
 
 interface AccountInfoFormProps {
@@ -23,6 +24,7 @@ export default function AccountInfoForm({
   const [firstName, setFirstName] = useState(user.first_name);
   const [lastName, setLastName] = useState(user.last_name);
   const [phone, setPhone] = useState(user.phone || "");
+  const [role, setRole] = useState<UserRole>(user.role);
 
   const [isUpdating, setIsUpdating] = useState(false);
 
@@ -30,6 +32,7 @@ export default function AccountInfoForm({
     setFirstName(user.first_name);
     setLastName(user.last_name);
     setPhone(user.phone || "");
+    setRole(user.role);
   }, [user]);
 
   async function handleSubmit(event: FormEvent<HTMLFormElement>) {
@@ -43,6 +46,7 @@ export default function AccountInfoForm({
         first_name: firstName,
         last_name: lastName,
         phone,
+        role,
       });
 
       onUserUpdated(updatedUser);
@@ -78,7 +82,7 @@ export default function AccountInfoForm({
         </div>
 
         <span className="rounded-full bg-brav-secondary px-3 py-1 text-xs font-medium uppercase text-brav-foreground">
-          Role: {user.role}
+          Role: {role === "customer" ? "Customer" : "Admin"}
         </span>
       </div>
 
@@ -165,6 +169,23 @@ export default function AccountInfoForm({
             />
           </div>
         </div>
+
+        <Select
+          id="role"
+          label="Account Role"
+          value={role}
+          onChange={(event) => setRole(event.target.value as UserRole)}
+          options={[
+            {
+              value: "customer",
+              label: "Customer",
+            },
+            {
+              value: "admin",
+              label: "Admin",
+            },
+          ]}
+        />
 
         <div className="pt-2">
           <button

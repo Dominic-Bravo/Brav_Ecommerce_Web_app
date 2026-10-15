@@ -2,6 +2,8 @@
 
 import type { SelectHTMLAttributes } from "react";
 
+import { cn } from "@/lib/utils";
+
 interface SelectProps
   extends SelectHTMLAttributes<HTMLSelectElement> {
   label: string;
@@ -24,30 +26,30 @@ export default function Select({
     <div className="space-y-2">
       <label
         htmlFor={id}
-        className="block text-sm font-medium text-brav-foreground"
+        className="block text-sm font-medium text-brand-primary"
       >
         {label}
       </label>
 
       <select
         id={id}
-        className={`
-          w-full
-          rounded-brav-md
-          border
-          bg-white
-          px-4
-          py-3
-          text-sm
-          text-brav-foreground
-          outline-none
-          transition
-          focus:border-brav-primary
-          focus:ring-2
-          focus:ring-brav-primary/10
-          ${error ? "border-brav-error" : "border-brav-border"}
-          ${className}
-        `}
+        className={cn(
+          "w-full",
+          "rounded-brav-md",
+          "border",
+          "bg-white",
+          "px-4",
+          "py-3",
+          "text-sm",
+          "text-brand-foreground",
+          "outline-none",
+          "transition",
+          "focus:border-brand-accent",
+          "focus:ring-2",
+          "focus:ring-brand-accent/10",
+          error ? "border-ui-danger" : "border-brav-border",
+          className,
+        )}
         {...props}
       >
         {options.map((option) => (
@@ -61,7 +63,7 @@ export default function Select({
       </select>
 
       {error && (
-        <p className="text-sm text-brav-error">
+        <p className="text-sm text-ui-danger">
           {error}
         </p>
       )}

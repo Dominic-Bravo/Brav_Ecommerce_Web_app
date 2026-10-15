@@ -9,6 +9,8 @@ import ProfileAlert from "./ProfileAlert";
 import AccountInfoForm from "./AccountInfoForm";
 import ProfileInfoForm from "./ProfileInfoForm";
 import DeleteAccountSection from "./DeleteAccountSection";
+import AdminProductsSection from "./AdminProductsSection";
+import { Can } from "@/components/auth/Can";
 
 interface ProfileMessage {
   text: string;
@@ -54,6 +56,10 @@ export default function ProfileContent() {
         <ProfileInfoForm
           onMessage={handleMessage}
         />
+
+        <Can permission="access_admin">
+          <AdminProductsSection />
+        </Can>
 
         <DeleteAccountSection
           onDeleted={logout}

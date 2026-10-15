@@ -6,23 +6,23 @@ import { usePathname } from "next/navigation";
 const navigation = [
   {
     name: "Dashboard",
-    href: "/dashboard",
+    href: "/admin/dashboard",
   },
   {
     name: "Products",
-    href: "/dashboard/products",
+    href: "/admin/products",
   },
   {
     name: "Orders",
-    href: "/dashboard/orders",
+    href: "/admin/orders",
   },
   {
     name: "Customers",
-    href: "/dashboard/customers",
+    href: "/admin/customers",
   },
   {
-    name: "API Testing",
-    href: "/dashboard/api-test",
+    name: "Categories",
+    href: "/admin/categories",
   },
 ];
 

@@ -7,17 +7,19 @@ import { can } from "@/lib/auth/authorization";
 
 import type { Permission } from "@/config/permissions";
 
-interface CanProps {
-  permission: Permission;
-  children: ReactNode;
-  fallback?: ReactNode;
-}
-
-export default function Can({
+/**
+ * Can component for role-based access control
+ * Per CLAUDE.md: Use <Can permission="access_admin"> for admin guards
+ */
+export function Can({
   permission,
   children,
   fallback = null,
-}: CanProps) {
+}: {
+  permission: Permission;
+  children: ReactNode;
+  fallback?: ReactNode;
+}) {
   const { user, isLoading } = useAuth();
 
   if (isLoading || !user) {
