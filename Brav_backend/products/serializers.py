@@ -1,10 +1,12 @@
 # products/serializers.py
 from rest_framework import serializers
-from products.models import Category, Product, ProductImage, InventoryLog
+
+from products.models import Category, InventoryLog, Product, ProductImage
 
 
 class CategorySerializer(serializers.ModelSerializer):
     """Serializer for product categories, including nested sub-categories (children)."""
+
     children = serializers.SerializerMethodField()
 
     class Meta:
@@ -40,6 +42,7 @@ class ProductImageSerializer(serializers.ModelSerializer):
 
 class ProductSerializer(serializers.ModelSerializer):
     """Detailed serializer for products including nested images and category details."""
+
     images = ProductImageSerializer(many=True, read_only=True)
     category_name = serializers.CharField(source="category.name", read_only=True)
 

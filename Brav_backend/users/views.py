@@ -1,53 +1,51 @@
 # users/views.py
-from django.conf import settings
-from django.middleware.csrf import get_token
-
-from rest_framework import status, permissions, viewsets, generics
-from rest_framework.views import APIView
-from rest_framework.response import Response
-from rest_framework_simplejwt.tokens import RefreshToken, TokenError
-
-from drf_spectacular.utils import extend_schema, extend_schema_view, OpenApiResponse
-
-from users.models import Profile, Address
-from users.serializers import (
-    RegisterSerializer,
-    UserResponseSerializer,
-    LoginSerializer,
-    LogoutSerializer,
-    UserMeSerializer,
-    ProfileSerializer,
-    AddressSerializer,
-)
-
-from brav_core.permissions import (
-    IsAuthenticatedUser,
-    IsCustomerUserRole,
-    IsAdminUserRole,
-)
-
 from allauth.socialaccount.providers.facebook.views import FacebookOAuth2Adapter
 from allauth.socialaccount.providers.google.views import GoogleOAuth2Adapter
 from allauth.socialaccount.providers.oauth2.client import OAuth2Client
 from dj_rest_auth.registration.views import SocialLoginView
+from django.conf import settings
+from django.middleware.csrf import get_token
+from drf_spectacular.utils import (
+    OpenApiResponse,
+    extend_schema,
+    extend_schema_view,
+    inline_serializer,
+)
+from rest_framework import generics, permissions, serializers, status, viewsets
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_simplejwt.exceptions import TokenError
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from users.models import Address, Profile
+from users.serializers import (
+    AddressSerializer,
+    LoginSerializer,
+    LogoutSerializer,
+    ProfileSerializer,
+    RegisterSerializer,
+    UserMeSerializer,
+    UserResponseSerializer,
+)
 
 
 def set_refresh_cookie(response: Response, refresh_token: str) -> None:
     """Attaches HttpOnly cookie to response."""
     response.set_cookie(
-        key=settings.SIMPLE_JWT['AUTH_COOKIE'],
+        key=settings.SIMPLE_JWT["AUTH_COOKIE"],
         value=refresh_token,
-        max_age=int(settings.SIMPLE_JWT['REFRESH_TOKEN_LIFETIME'].total_seconds()),
-        httponly=settings.SIMPLE_JWT['AUTH_COOKIE_HTTP_ONLY'],
-        secure=settings.SIMPLE_JWT['AUTH_COOKIE_SECURE'],
-        samesite=settings.SIMPLE_JWT['AUTH_COOKIE_SAMESITE'],
-        path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+        max_age=int(settings.SIMPLE_JWT["REFRESH_TOKEN_LIFETIME"].total_seconds()),
+        httponly=settings.SIMPLE_JWT["AUTH_COOKIE_HTTP_ONLY"],
+        secure=settings.SIMPLE_JWT["AUTH_COOKIE_SECURE"],
+        samesite=settings.SIMPLE_JWT["AUTH_COOKIE_SAMESITE"],
+        path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
     )
 
 
 # ==========================================
 # AUTHENTICATION & SOCIAL LOGIN VIEWS
 # ==========================================
+
 
 class BaseCustomSocialLoginView(SocialLoginView):
     permission_classes = [permissions.AllowAny]
@@ -58,7 +56,7 @@ class BaseCustomSocialLoginView(SocialLoginView):
         Returns access token in JSON and attaches refresh token in HttpOnly cookie.
         """
         original_response = super().get_response()
-        
+
         access_token = original_response.data.get("access")
         refresh_token = original_response.data.get("refresh")
         user_data = UserMeSerializer(self.user).data
@@ -80,7 +78,7 @@ class BaseCustomSocialLoginView(SocialLoginView):
 class GoogleLoginAPIView(BaseCustomSocialLoginView):
     adapter_class = GoogleOAuth2Adapter
     client_class = OAuth2Client
-    callback_url = f"{settings.FRONTEND_URL}/accounts/google/login/callback/"
+    callback_url = f"{settings.FRONTEND_URL}/accounts/google/login/callback"
 
     @extend_schema(
         summary="Google OAuth2 Login",
@@ -117,7 +115,7 @@ class RegisterAPIView(APIView):
     def post(self, request, *args, **kwargs):
         serializer = RegisterSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
-        
+
         user = serializer.save()
         refresh = RefreshToken.for_user(user)
 
@@ -141,14 +139,23 @@ class LoginAPIView(APIView):
     @extend_schema(
         request=LoginSerializer,
         summary="Login User",
+        responses={
+            status.HTTP_200_OK: inline_serializer(
+                name="LoginResponse",
+                fields={
+                    "access": serializers.CharField(),
+                    "user": UserMeSerializer(),
+                },
+            )
+        },
         description="Authenticates user, returns Access Token in JSON, and sets Refresh Token in HttpOnly cookie.",
         tags=["Authentication"],
     )
     def post(self, request, *args, **kwargs):
-        serializer = LoginSerializer(data=request.data, context={'request': request})
+        serializer = LoginSerializer(data=request.data, context={"request": request})
         serializer.is_valid(raise_exception=True)
 
-        user = serializer.validated_data['user']
+        user = serializer.validated_data["user"]
         refresh = RefreshToken.for_user(user)
 
         response = Response(
@@ -174,10 +181,13 @@ class TokenRefreshAPIView(APIView):
         tags=["Authentication"],
     )
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT["AUTH_COOKIE"])
 
         if not refresh_token:
-            return Response({"detail": "Refresh token missing from cookie."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Refresh token missing from cookie."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
         try:
             refresh = RefreshToken(refresh_token)
@@ -195,19 +205,24 @@ class TokenRefreshAPIView(APIView):
 
             return response
         except TokenError:
-            return Response({"detail": "Invalid or expired refresh token."}, status=status.HTTP_401_UNAUTHORIZED)
+            return Response(
+                {"detail": "Invalid or expired refresh token."},
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
 
 
 class LogoutAPIView(APIView):
     permission_classes = [permissions.IsAuthenticated]
-    serializer_class = LogoutSerializer
 
     @extend_schema(
         summary="Logout User",
         tags=["Authentication"],
+        responses={
+            200: OpenApiResponse(description="Logout successful."),
+        },
     )
     def post(self, request, *args, **kwargs):
-        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+        refresh_token = request.COOKIES.get(settings.SIMPLE_JWT["AUTH_COOKIE"])
 
         if refresh_token:
             try:
@@ -216,62 +231,108 @@ class LogoutAPIView(APIView):
             except TokenError:
                 pass
 
-        response = Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
-        response.delete_cookie(
-            settings.SIMPLE_JWT['AUTH_COOKIE'],
-            path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+        response = Response(
+            {"message": "Logout successful."},
+            status=status.HTTP_200_OK,
         )
+
+        # Delete refresh cookie
+        response.delete_cookie(
+            key=settings.SIMPLE_JWT["AUTH_COOKIE"],
+            path=settings.SIMPLE_JWT["AUTH_COOKIE_PATH"],
+        )
+
+        # Delete access cookie if configured separately
+        access_cookie = settings.SIMPLE_JWT.get("AUTH_ACCESS_COOKIE")
+
+        if access_cookie:
+            response.delete_cookie(
+                key=access_cookie,
+                path=settings.SIMPLE_JWT.get("AUTH_ACCESS_COOKIE_PATH", "/"),
+            )
+
         return response
+
+
+# class LogoutAPIView(APIView):
+#     permission_classes = [permissions.IsAuthenticated]
+#     serializer_class = LogoutSerializer
+
+#     @extend_schema(
+#         summary="Logout User",
+#         tags=["Authentication"],
+#     )
+#     def post(self, request, *args, **kwargs):
+#         refresh_token = request.COOKIES.get(settings.SIMPLE_JWT['AUTH_COOKIE'])
+
+#         if refresh_token:
+#             try:
+#                 token = RefreshToken(refresh_token)
+#                 token.blacklist()
+#             except TokenError:
+#                 pass
+
+#         response = Response({"message": "Logout successful."}, status=status.HTTP_200_OK)
+#         response.delete_cookie(
+#             settings.SIMPLE_JWT['AUTH_COOKIE'],
+#             path=settings.SIMPLE_JWT['AUTH_COOKIE_PATH'],
+#         )
+#         return response
 
 
 # ==========================================
 # USER PROFILE & ACCOUNT MANAGEMENT VIEWS
 # ==========================================
 
+
+@extend_schema_view(
+    get=extend_schema(
+        summary="Get Current User Profile",
+        responses={200: UserMeSerializer},
+        tags=["Users"],
+    ),
+    patch=extend_schema(
+        summary="Update Current User Profile (Partial)",
+        request=UserMeSerializer,
+        responses={200: UserMeSerializer},
+        tags=["Users"],
+    ),
+    put=extend_schema(
+        summary="Update Current User Profile (Full)",
+        request=UserMeSerializer,
+        responses={200: UserMeSerializer},
+        tags=["Users"],
+    ),
+    delete=extend_schema(
+        summary="Delete Account",
+        description="Permanently deletes the currently authenticated user and all associated records (profile, addresses, tokens).",
+        responses={204: OpenApiResponse(description="Account successfully deleted.")},
+        tags=["Users"],
+    ),
+)
 class UserMeAPIView(generics.RetrieveUpdateDestroyAPIView):
     """
     GET: Returns current authenticated user's details.
     PATCH/PUT: Updates allowed user profile fields.
     DELETE: Deletes the user account and cascades all related data.
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = UserMeSerializer
 
     def get_object(self):
-        return self.request.user
+        # OPTIMIZATION: Select related profile and prefetch addresses to avoid N+1 queries
+        user = self.request.user
+        from django.contrib.auth import get_user_model
 
-    @extend_schema(
-        summary="Get Current User Profile",
-        responses={200: UserMeSerializer},
-        tags=["Users"],
-    )
-    def get(self, request, *args, **kwargs):
-        return super().get(request, *args, **kwargs)
+        User = get_user_model()
 
-    @extend_schema(
-        summary="Update Current User Profile (Partial)",
-        request=UserMeSerializer,
-        responses={200: UserMeSerializer},
-        tags=["Users"],
-    )
-    def patch(self, request, *args, **kwargs):
-        return super().partial_update(request, *args, **kwargs)
+        return (
+            User.objects.select_related("profile")
+            .prefetch_related("addresses")
+            .get(pk=user.pk)
+        )
 
-    @extend_schema(
-        summary="Update Current User Profile (Full)",
-        request=UserMeSerializer,
-        responses={200: UserMeSerializer},
-        tags=["Users"],
-    )
-    def put(self, request, *args, **kwargs):
-        return super().update(request, *args, **kwargs)
-
-    @extend_schema(
-        summary="Delete Account",
-        description="Permanently deletes the currently authenticated user and all associated records (profile, addresses, tokens).",
-        responses={204: OpenApiResponse(description="Account successfully deleted.")},
-        tags=["Users"],
-    )
     def destroy(self, request, *args, **kwargs):
         user = self.get_object()
         user.delete()
@@ -286,6 +347,7 @@ class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
     GET /api/v1/users/me/profile/ - Get current user's profile
     PATCH /api/v1/users/me/profile/ - Update current user's profile
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = ProfileSerializer
 
@@ -293,31 +355,47 @@ class ProfileRetrieveUpdateAPIView(generics.RetrieveUpdateAPIView):
         profile, _ = Profile.objects.get_or_create(user=self.request.user)
         return profile
 
-    @extend_schema(summary="Get User Extended Profile", tags=["Users"])
+    @extend_schema(summary="Get User Extended Profile", tags=["Profiles"])
     def get(self, request, *args, **kwargs):
         return super().get(request, *args, **kwargs)
 
-    @extend_schema(summary="Update User Extended Profile", request=ProfileSerializer, tags=["Users"])
+    @extend_schema(
+        summary="Update User Extended Profile",
+        request=ProfileSerializer,
+        tags=["Profiles"],
+    )
     def patch(self, request, *args, **kwargs):
         return super().partial_update(request, *args, **kwargs)
+
+    @extend_schema(
+        summary="Update User Extended Profile (Full)",
+        request=ProfileSerializer,
+        tags=["Profiles"],
+    )
+    def put(self, request, *args, **kwargs):
+        return super().update(request, *args, **kwargs)
 
 
 # ==========================================
 # ADDRESS CRUD VIEWSET
 # ==========================================
 
+
 @extend_schema_view(
     list=extend_schema(summary="List User Addresses", tags=["Addresses"]),
     create=extend_schema(summary="Create User Address", tags=["Addresses"]),
     retrieve=extend_schema(summary="Retrieve Single Address", tags=["Addresses"]),
     update=extend_schema(summary="Update Address (Full)", tags=["Addresses"]),
-    partial_update=extend_schema(summary="Update Address (Partial)", tags=["Addresses"]),
+    partial_update=extend_schema(
+        summary="Update Address (Partial)", tags=["Addresses"]
+    ),
     destroy=extend_schema(summary="Delete Address", tags=["Addresses"]),
 )
 class AddressViewSet(viewsets.ModelViewSet):
     """
     CRUD ViewSet for User Addresses with explicit success message responses.
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = AddressSerializer
 
@@ -326,17 +404,30 @@ class AddressViewSet(viewsets.ModelViewSet):
 
     def list(self, request, *args, **kwargs):
         response = super().list(request, *args, **kwargs)
-        return Response({
-            "message": "Addresses retrieved successfully.",
-            "data": response.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Addresses retrieved successfully.", "data": response.data},
+            status=status.HTTP_200_OK,
+        )
 
     def retrieve(self, request, *args, **kwargs):
         response = super().retrieve(request, *args, **kwargs)
-        return Response({
-            "message": "Address retrieved successfully.",
-            "data": response.data
-        }, status=status.HTTP_200_OK)
+        return Response(
+            {"message": "Address retrieved successfully.", "data": response.data},
+            status=status.HTTP_200_OK,
+        )
+
+    def perform_create(self, serializer):
+        user = self.request.user
+        user_has_addresses = Address.objects.filter(user=user).exists()
+        is_default = serializer.validated_data.get('is_default', False)
+
+        if not user_has_addresses:
+            is_default = True
+        elif is_default:
+            Address.objects.filter(user=user, is_default=True).update(is_default=False)
+
+        # Only pass is_default here; let the serializer extract the user from context
+        serializer.save(is_default=is_default)
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -352,13 +443,26 @@ class AddressViewSet(viewsets.ModelViewSet):
             headers=headers,
         )
 
+    def perform_update(self, serializer):
+        user = self.request.user
+        is_default = serializer.validated_data.get('is_default', None)
+
+        # Rule: If this address is being updated to be the new default
+        if is_default is True:
+            # Unset 'is_default' for all other addresses belonging to this user,
+            # while excluding the current address being updated
+            Address.objects.filter(user=user, is_default=True).exclude(pk=serializer.instance.pk).update(is_default=False)
+
+        serializer.save()
+
+
     def update(self, request, *args, **kwargs):
-        partial = kwargs.pop('partial', False)
+        partial = kwargs.pop("partial", False)
         instance = self.get_object()
         serializer = self.get_serializer(instance, data=request.data, partial=partial)
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
-        
+
         return Response(
             {
                 "message": "Address updated successfully.",
@@ -368,106 +472,12 @@ class AddressViewSet(viewsets.ModelViewSet):
         )
 
     def partial_update(self, request, *args, **kwargs):
-        kwargs['partial'] = True
+        kwargs["partial"] = True
         return self.update(request, *args, **kwargs)
 
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         self.perform_destroy(instance)
         return Response(
-            {
-                "message": "Address deleted successfully."
-            },
-            status=status.HTTP_200_OK
-        )
-
-
-# ==========================================
-# PERMISSION TESTING VIEWS
-# ==========================================
-
-class AuthenticatedTestView(APIView):
-    permission_classes = [IsAuthenticatedUser]
-
-    @extend_schema(
-        summary="Test Authenticated User Access",
-        description="Accessible by any logged-in user regardless of role (Customer or Admin).",
-        responses={200: OpenApiResponse(description="Access granted.")},
-        tags=["Testing / Permissions"],
-    )
-    def get(self, request):
-        return Response(
-            {
-                "message": f"Hello, {request.user.first_name}! You are authenticated.",
-                "user_id": str(request.user.id),
-                "role": request.user.role,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class CustomerOnlyTestView(APIView):
-    permission_classes = [IsCustomerUserRole]
-
-    @extend_schema(
-        summary="Test Customer Role Access",
-        description="Accessible ONLY by users with role='customer'.",
-        responses={
-            200: OpenApiResponse(description="Customer access granted."),
-            403: OpenApiResponse(description="Permission denied."),
-        },
-        tags=["Testing / Permissions"],
-    )
-    def get(self, request):
-        return Response(
-            {
-                "message": "Welcome Customer! You have access to customer endpoints.",
-                "role": request.user.role,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class AdminOnlyTestView(APIView):
-    permission_classes = [IsAdminUserRole]
-
-    @extend_schema(
-        summary="Test Admin Role Access",
-        description="Accessible ONLY by users with role='admin' or staff status.",
-        responses={
-            200: OpenApiResponse(description="Admin access granted."),
-            403: OpenApiResponse(description="Permission denied."),
-        },
-        tags=["Testing / Permissions"],
-    )
-    def get(self, request):
-        return Response(
-            {
-                "message": "Welcome Admin! You have access to administrative controls.",
-                "role": request.user.role,
-            },
-            status=status.HTTP_200_OK,
-        )
-
-
-class AllOnlyTestView(APIView):
-    permission_classes = [permissions.AllowAny]
-
-    @extend_schema(
-        summary="Test All Role Access",
-        description="Accessible by all users.",
-        responses={
-            200: OpenApiResponse(description="Anonymous access granted."),
-            403: OpenApiResponse(description="Permission denied."),
-        },
-        tags=["Testing / Permissions"],
-    )
-    def get(self, request):
-        user_role = getattr(request.user, 'role', 'Anonymous') if request.user and request.user.is_authenticated else 'Anonymous'
-        return Response(
-            {
-                "message": "Welcome Anonymous! You have access to this api.",
-                "role": user_role,
-            },
-            status=status.HTTP_200_OK,
+            {"message": "Address deleted successfully."}, status=status.HTTP_200_OK
         )

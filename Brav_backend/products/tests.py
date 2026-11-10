@@ -1,15 +1,15 @@
 # products/tests.py
+from django.contrib.auth import get_user_model
 from django.urls import reverse
 from rest_framework import status
 from rest_framework.test import APITestCase
-from django.contrib.auth import get_user_model
+
 from products.models import Category
 
 User = get_user_model()
 
 
 class ProductAPITests(APITestCase):
-
     def setUp(self):
         # Create a Category for testing products
         self.category = Category.objects.create(name="Electronics", slug="electronics")
@@ -53,13 +53,17 @@ class ProductAPITests(APITestCase):
     def test_customer_cannot_create_product(self):
         """Customers with role='customer' should get 403 Forbidden when trying to create a product."""
         self.client.force_authenticate(user=self.customer)
-        response = self.client.post(self.product_url, self.valid_product_payload, format="json")
+        response = self.client.post(
+            self.product_url, self.valid_product_payload, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_admin_can_create_product(self):
         """Admin users with role='admin' should successfully create a product."""
         self.client.force_authenticate(user=self.admin_user)
-        response = self.client.post(self.product_url, self.valid_product_payload, format="json")
+        response = self.client.post(
+            self.product_url, self.valid_product_payload, format="json"
+        )
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         # Standard DRF ViewSet returns the object directly at root level
         self.assertEqual(response.data["name"], "Wireless Mouse")

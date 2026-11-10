@@ -1,18 +1,17 @@
 # users/adapters.py
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
-from allauth.account.utils import perform_login
-from django.contrib.auth import get_user_model
-
 import random
-from django.db import transaction
-from .models import Profile  # Adjust this import to match your profile app path
 from datetime import datetime
+
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+from django.contrib.auth import get_user_model
+from django.db import transaction
+
+from .models import Profile  # Adjust this import to match your profile app path
 
 User = get_user_model()
 
 
 class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
-
     def populate_user(self, request, sociallogin, data):
         """
         Populates the User model with details from the Google OAuth payload.
@@ -21,8 +20,14 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         extra_data = sociallogin.account.extra_data
 
         # Fallback extraction directly from Google extra data fields
-        user.first_name = extra_data.get("given_name") or extra_data.get("first_name") or "User"
-        user.last_name = extra_data.get("family_name") or extra_data.get("last_name") or str(random.randint(1000, 9999))
+        user.first_name = (
+            extra_data.get("given_name") or extra_data.get("first_name") or "User"
+        )
+        user.last_name = (
+            extra_data.get("family_name")
+            or extra_data.get("last_name")
+            or str(random.randint(1000, 9999))
+        )
 
         # Default the role to customer if not set
         if not getattr(user, "role", None):
@@ -32,7 +37,7 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
 
     def save_user(self, request, sociallogin, form=None):
         """
-        Overrides save_user to automatically create the associated Profile 
+        Overrides save_user to automatically create the associated Profile
         with default or Google-provided information.
         """
         # Save the primary user account securely
@@ -43,16 +48,16 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
         with transaction.atomic():
             # Ensure we don't duplicate profiles if connecting an existing account
             profile, created = Profile.objects.get_or_create(user=user)
-            
+
             if created:
                 # Extract avatar URL from Google payload
                 profile.avatar = extra_data.get("picture", "")
-                
+
                 # Extract gender and apply default if not set or empty
                 profile.gender = extra_data.get("gender")
                 if not profile.gender:
                     profile.gender = "Not Specified"  # Or your profile choice here
-                
+
                 # --- DATE OF BIRTH EXTRACTION ---
                 raw_birthday = extra_data.get("birthday")
                 parsed_dob = None
@@ -61,7 +66,9 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                     # Handle common Google API date string combinations
                     for date_format in ("%Y-%m-%d", "%m/%d/%Y", "%m/%d"):
                         try:
-                            parsed_dob = datetime.strptime(raw_birthday, date_format).date()
+                            parsed_dob = datetime.strptime(
+                                raw_birthday, date_format
+                            ).date()
                             # If Google returns only month/day (due to hidden privacy settings), inject a default year
                             if date_format == "%m/%d":
                                 parsed_dob = parsed_dob.replace(year=2000)
@@ -73,8 +80,10 @@ class CustomSocialAccountAdapter(DefaultSocialAccountAdapter):
                 if parsed_dob:
                     profile.date_of_birth = parsed_dob
                 else:
-                    profile.date_of_birth = datetime.strptime("2000-01-01", "%Y-%m-%d").date()
-                
+                    profile.date_of_birth = datetime.strptime(
+                        "2000-01-01", "%Y-%m-%d"
+                    ).date()
+
                 # Save metadata
                 profile.save()
 

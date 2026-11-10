@@ -1,4 +1,5 @@
 import uuid
+
 from django.conf import settings
 from django.db import models
 
@@ -12,8 +13,12 @@ class Coupon(models.Model):
     code = models.CharField(max_length=50, unique=True)
     type = models.CharField(max_length=20, choices=CouponType.choices)
     value = models.DecimalField(max_digits=10, decimal_places=2)
-    min_order_amount = models.DecimalField(max_digits=10, decimal_places=2, default=0.00)
-    max_discount_amount = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
+    min_order_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, default=0.00
+    )
+    max_discount_amount = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
     usage_limit = models.PositiveIntegerField(null=True, blank=True)
     used_count = models.PositiveIntegerField(default=0)
     start_date = models.DateTimeField()
@@ -46,7 +51,9 @@ class Order(models.Model):
         related_name="orders",
     )
     order_number = models.CharField(max_length=50, unique=True)
-    status = models.CharField(max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING)
+    status = models.CharField(
+        max_length=20, choices=OrderStatus.choices, default=OrderStatus.PENDING
+    )
     total_amount = models.DecimalField(max_digits=10, decimal_places=2)
     shipping_address = models.TextField()  # Snapshot of address at checkout
     payment_method = models.CharField(max_length=50)

@@ -1,4 +1,5 @@
 import uuid
+
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 
@@ -29,7 +30,7 @@ class User(AbstractUser):
     username = None  # Using email for authentication
     email = models.EmailField(unique=True)
     first_name = models.CharField(max_length=100)
-    last_name = models.CharField(max_length=100) 
+    last_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20, blank=True, null=True)
     role = models.CharField(max_length=20, choices=Role.choices, default=Role.CUSTOMER)
     is_active = models.BooleanField(default=True)
@@ -65,7 +66,9 @@ class Address(models.Model):
 
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(User, on_delete=models.CASCADE, related_name="addresses")
-    type = models.CharField(max_length=20, choices=AddressType.choices, default=AddressType.SHIPPING)
+    type = models.CharField(
+        max_length=20, choices=AddressType.choices, default=AddressType.SHIPPING
+    )
     full_name = models.CharField(max_length=100)
     phone = models.CharField(max_length=20)
     street_address = models.TextField()

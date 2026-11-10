@@ -14,3 +14,28 @@ dependencies = [
     "drf-spectacular>=0.30.0",
     "python-dotenv>=1.2.4",
 ]
+
+[tool.ruff.lint]
+# Enable the standard rules plus the Django-specific plugin (DJ)
+extend-select = [
+    "DJ",   # flake8-django (catches Django-specific bugs)
+    "E",    # pycodestyle errors
+    "W",    # pycodestyle warnings
+    "F",    # Pyflakes
+    "I",    # isort (automatically sorts imports)
+    "B",    # flake8-bugbear
+    "UP",   # pyupgrade
+]
+
+[tool.ruff.lint.per-file-ignores]
+# Ignore long lines and specific mutable rules in auto-generated migrations
+"**/migrations/*.py" = ["E501", "RUF012"]
+# Ignore unused imports or wildcard imports in settings
+"**/settings.py" = ["E501", "F403", "F405"]
+# Allow assert statements in tests
+"**/tests.py" = ["S101"]
+"**/test_*.py" = ["S101"]
+
+
+[tool.pyright]
+reportMissingTypeStubs = false

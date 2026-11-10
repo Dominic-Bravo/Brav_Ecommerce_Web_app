@@ -1,30 +1,37 @@
 # common/permissions.py
-from rest_framework.permissions import BasePermission, SAFE_METHODS
+from rest_framework.permissions import SAFE_METHODS, BasePermission
 
 
 class IsAuthenticatedUser(BasePermission):
     """Allows access only to authenticated users."""
+
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated)
 
 
 class IsAdminUserRole(BasePermission):
     """Allows access only to authenticated users with the 'admin' role or superusers."""
+
     def has_permission(self, request, view):
         return bool(
-            request.user 
-            and request.user.is_authenticated 
-            and (request.user.role == 'admin' or request.user.is_staff or request.user.is_superuser)
+            request.user
+            and request.user.is_authenticated
+            and (
+                request.user.role == "admin"
+                or request.user.is_staff
+                or request.user.is_superuser
+            )
         )
 
 
 class IsCustomerUserRole(BasePermission):
     """Allows access only to authenticated users with the 'customer' role."""
+
     def has_permission(self, request, view):
         return bool(
-            request.user 
-            and request.user.is_authenticated 
-            and request.user.role == 'customer'
+            request.user
+            and request.user.is_authenticated
+            and request.user.role == "customer"
         )
 
 
@@ -36,11 +43,12 @@ class IsCustomerUserRole(BasePermission):
 #     def has_permission(self, request, view):
 #         if not (request.user and request.user.is_authenticated):
 #             return False
-            
+
 #         if request.method in SAFE_METHODS:
 #             return True
-            
+
 #         return bool(request.user.role == 'admin' or request.user.is_staff or request.user.is_superuser)
+
 
 # common/permissions.py
 class IsAdminOrReadOnly(BasePermission):
@@ -48,19 +56,20 @@ class IsAdminOrReadOnly(BasePermission):
     Allows read-only access (GET, HEAD, OPTIONS) to ANYONE (including unauthenticated guests),
     but write actions (POST, PUT, PATCH, DELETE) require an Admin role, Staff, or Superuser.
     """
+
     def has_permission(self, request, view):
         # 1. Allow read-only/safe methods for everyone (guests and logged-in users alike)
         if request.method in SAFE_METHODS:
             return True
-            
+
         # 2. For write methods, block unauthenticated users
         if not (request.user and request.user.is_authenticated):
             return False
-            
+
         # 3. Require admin, staff, or superuser status for modifications
         return bool(
-            getattr(request.user, 'role', None) == 'admin' 
-            or request.user.is_staff 
+            getattr(request.user, "role", None) == "admin"
+            or request.user.is_staff
             or request.user.is_superuser
         )
 
@@ -70,13 +79,14 @@ class IsOwnerOrAdmin(BasePermission):
     Object-level permission to allow access only to owners of the object or admins.
     Assumes the target model instance has a `user` attribute.
     """
+
     def has_permission(self, request, view):
         return bool(request.user and request.user.is_authenticated)
 
     def has_object_permission(self, request, view, obj):
-        if request.user.role == 'admin' or request.user.is_staff:
+        if request.user.role == "admin" or request.user.is_staff:
             return True
-            
+
         # Check if object belongs to the user (e.g. Order.user or Address.user)
-        owner = getattr(obj, 'user', None)
+        owner = getattr(obj, "user", None)
         return owner == request.user

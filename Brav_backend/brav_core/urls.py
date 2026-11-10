@@ -14,8 +14,9 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+
 from django.contrib import admin
-from django.urls import path, include
+from django.urls import include, path
 from drf_spectacular.views import (
     SpectacularAPIView,
     SpectacularRedocView,
@@ -23,20 +24,24 @@ from drf_spectacular.views import (
 )
 
 api_patterns = [
-    path('api/v1/users/', include('users.urls', namespace='users')),
-    path("api/v1/products/", include("products.urls", namespace='products')),
-    path("api/v1/cart/", include("cart.urls", namespace='cart')),
-    path("api/v1/orders/", include("orders.urls")),
-    path("api/v1/reviews/", include("reviews.urls")),
+    path("api/v1/users/", include("users.urls", namespace="users")),
+    path("api/v1/products/", include("products.urls", namespace="products")),
+    path("api/v1/cart/", include("cart.urls", namespace="cart")),
+    path("api/v1/orders/", include("orders.urls", namespace="orders")),
+    path("api/v1/reviews/", include("reviews.urls", namespace="reviews")),
 ]
 
 urlpatterns = [
-    path('admin/', admin.site.urls),
-     path('', include(api_patterns)), # Groups all modules neatly under /api/v1/
-    
-
+    path("admin/", admin.site.urls),
+    path("", include(api_patterns)),  # Groups all modules neatly under /api/v1/
     # OpenAPI 3 Schema & Swagger UI
-    path('api/schema/', SpectacularAPIView.as_view(), name='schema'),
-    path('api/docs/swagger/', SpectacularSwaggerView.as_view(url_name='schema'), name='swagger-ui'),
-    path('api/docs/redoc/', SpectacularRedocView.as_view(url_name='schema'), name='redoc'),
+    path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
+    path(
+        "api/docs/swagger/",
+        SpectacularSwaggerView.as_view(url_name="schema"),
+        name="swagger-ui",
+    ),
+    path(
+        "api/docs/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"
+    ),
 ]

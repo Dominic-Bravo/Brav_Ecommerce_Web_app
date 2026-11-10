@@ -1,59 +1,110 @@
 # orders/views.py
-import uuid
-from decimal import Decimal
-from django.utils import timezone
-from rest_framework import viewsets, permissions, status, generics
-from rest_framework.response import Response
-from django.shortcuts import get_object_or_404
-from django.db import transaction
 from drf_spectacular.utils import extend_schema, extend_schema_view
+from rest_framework import generics, mixins, permissions, status, viewsets
+from rest_framework.response import Response
 
-from orders.models import Order, OrderItem, Coupon
-from orders.serializers import OrderSerializer, CheckoutSerializer
-from cart.models import Cart
-from users.models import Address
+from orders.models import Order, Coupon
+from orders.serializers import CheckoutSerializer, OrderSerializer, CouponSerializer
+from orders.services import process_checkout
+from brav_core.permissions import IsAdminUserRole
+
+from rest_framework import viewsets
+from drf_spectacular.utils import extend_schema_view, extend_schema
+from orders.models import Coupon
+from orders.serializers import CouponSerializer
 from brav_core.permissions import IsAdminOrReadOnly
 
+
+@extend_schema_view(
+    list=extend_schema(
+        summary="List available coupons",
+        description="Retrieve a list of active coupons. Accessible to anyone (including anonymous users).",
+        tags=["Coupons"]
+    ),
+    create=extend_schema(
+        summary="Create a new coupon",
+        description="Create a new discount coupon. Restricted to admin users.",
+        tags=["Coupons"]
+    ),
+    retrieve=extend_schema(
+        summary="Retrieve coupon details",
+        description="Get detailed information about a specific coupon. Restricted to admin users.",
+        tags=["Coupons"]
+    ),
+    update=extend_schema(
+        summary="Full update of a coupon",
+        description="Replace all fields of an existing coupon. Restricted to admin users.",
+        tags=["Coupons"]
+    ),
+    partial_update=extend_schema(
+        summary="Partial update of a coupon",
+        description="Update specific fields of a coupon. Restricted to admin users.",
+        tags=["Coupons"]
+    ),
+    destroy=extend_schema(
+        summary="Delete a coupon",
+        description="Permanently delete a coupon. Restricted to admin users.",
+        tags=["Coupons"]
+    ),
+)
+class CouponViewSet(viewsets.ModelViewSet):
+    queryset = Coupon.objects.all().order_by("-created_at")
+    serializer_class = CouponSerializer
+    permission_classes = [IsAdminOrReadOnly]
+
+    def get_queryset(self):
+        """
+        If an anonymous or regular customer is viewing the list,
+        optionally filter to only show active coupons that haven't expired.
+        Admins can see everything.
+        """
+        queryset = super().get_queryset()
+        user = self.request.user
+
+        # If the user is an admin or staff, let them see all coupons
+        if user.is_authenticated and (getattr(user, "role", None) == "admin" or user.is_staff or user.is_superuser):
+            return queryset
+
+        # For anonymous users or regular customers, only show active and valid coupons
+        # (Optional: remove this filter if you want them to see inactive ones too)
+        return queryset.filter(is_active=True)
 
 @extend_schema_view(
     list=extend_schema(summary="List Orders (User/Admin)", tags=["Orders"]),
     retrieve=extend_schema(summary="Retrieve Order Details", tags=["Orders"]),
 )
-class OrderViewSet(viewsets.ModelViewSet):
+class OrderViewSet(
+    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+):
     """
-    ViewSet for viewing orders. 
+    ReadOnly ViewSet for viewing orders.
     Customers see only their own orders. Admins see all store orders.
+    Orders are immutable and cannot be modified or deleted directly via API.
     """
+
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = OrderSerializer
 
     def get_queryset(self):
         user = self.request.user
+        # OPTIMIZATION: Prefetch related items and products in a single database hit
+        base_qs = Order.objects.select_related("user").prefetch_related(
+            "items__product"
+        )
+
         if getattr(user, "role", None) == "admin" or user.is_staff:
-            return Order.objects.all().prefetch_related("items__product")
-        return Order.objects.filter(user=user).prefetch_related("items__product")
-
-    def perform_destroy(self, instance):
-        """
-        Optional: Custom logic before deletion.
-        For example, prevent customers from deleting an order if it's already 'shipped'.
-        """
-        # Example safety check:
-        # if not self.request.user.is_staff and instance.status == 'shipped':
-        #     raise serializers.ValidationError("Cannot delete a shipped order.")
-        instance.delete()
+            return base_qs.all()
+        return base_qs.filter(user=user)
 
 
+# orders/views.py (Checkout view becomes clean and concise)
 class CheckoutAPIView(generics.CreateAPIView):
-    """
-    POST /api/v1/orders/checkout/ - Convert user cart into a confirmed order.
-    """
     permission_classes = [permissions.IsAuthenticated]
     serializer_class = CheckoutSerializer
 
     @extend_schema(
         summary="Process Cart Checkout",
-        description="Converts the active cart items into a permanent order, handles stock deduction, snapshot address, and clears cart.",
+        description="Converts active cart items into a permanent order, handles stock deduction, snapshot address, and clears cart.",
         request=CheckoutSerializer,
         responses={201: OrderSerializer},
         tags=["Orders"],
@@ -62,93 +113,15 @@ class CheckoutAPIView(generics.CreateAPIView):
         serializer = self.serializer_class(data=request.data)
         serializer.is_valid(raise_exception=True)
 
-        address_id = serializer.validated_data["address_id"]
-        payment_method = serializer.validated_data.get("payment_method", "Credit Card")
-        coupon_code = serializer.validated_data.get("coupon_code")
-
-        # 1. Fetch user cart and check if it has items
-        try:
-            cart = Cart.objects.prefetch_related("items__product").get(user=request.user)
-        except Cart.DoesNotExist:
-            return Response({"error": "No active cart found."}, status=status.HTTP_400_BAD_REQUEST)
-
-        cart_items = cart.items.all()
-        if not cart_items.exists():
-            return Response({"error": "Your cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
-
-        # 2. Fetch and validate shipping address belonging to the user
-        address_obj = get_object_or_404(Address, id=address_id, user=request.user)
-        shipping_address_snapshot = (
-            f"{address_obj.street_address}, {address_obj.city}, "
-            f"{address_obj.state}, {address_obj.postal_code}, {address_obj.country}"
+        # Delegate everything to the service layer
+        order = process_checkout(
+            user=request.user,
+            address_id=serializer.validated_data["address_id"],
+            payment_method=serializer.validated_data.get(
+                "payment_method", "Credit Card"
+            ),
+            coupon_code=serializer.validated_data.get("coupon_code"),
         )
-
-        # 3. Calculate subtotal & validate stock inside an atomic transaction
-        with transaction.atomic():
-            subtotal_amount = Decimal("0.00")
-            for item in cart_items:
-                if item.product.stock_quantity < item.quantity:
-                    return Response(
-                        {"error": f"Insufficient stock for product '{item.product.name}'."},
-                        status=status.HTTP_400_BAD_REQUEST,
-                    )
-                subtotal_amount += item.unit_price * item.quantity
-
-            # 4. Handle Coupon Discounts if provided
-            discount_amount = Decimal("0.00")
-            if coupon_code:
-                try:
-                    coupon = Coupon.objects.get(code=coupon_code, is_active=True)
-                    now = timezone.now()
-                    if coupon.start_date <= now <= coupon.end_date:
-                        if subtotal_amount >= coupon.min_order_amount:
-                            if coupon.type == Coupon.CouponType.PERCENTAGE:
-                                discount_amount = subtotal_amount * (coupon.value / Decimal("100"))
-                                if coupon.max_discount_amount and discount_amount > coupon.max_discount_amount:
-                                    discount_amount = coupon.max_discount_amount
-                            elif coupon.type == Coupon.CouponType.FIXED:
-                                discount_amount = coupon.value
-                            
-                            coupon.used_count += 1
-                            coupon.save()
-                        else:
-                            return Response({"error": f"Order total must be at least {coupon.min_order_amount} for this coupon."}, status=status.HTTP_400_BAD_REQUEST)
-                    else:
-                        return Response({"error": "Coupon is expired or not active yet."}, status=status.HTTP_400_BAD_REQUEST)
-                except Coupon.DoesNotExist:
-                    return Response({"error": "Invalid coupon code."}, status=status.HTTP_400_BAD_REQUEST)
-
-            final_total = max(Decimal("0.00"), subtotal_amount - discount_amount)
-
-            # 5. Create Order Record
-            order_number = f"ORD-{uuid.uuid4().hex[:8].upper()}"
-            order = Order.objects.create(
-                user=request.user,
-                order_number=order_number,
-                total_amount=final_total,
-                shipping_address=shipping_address_snapshot,
-                payment_method=payment_method,
-                status=Order.OrderStatus.PENDING,
-                payment_status=Order.PaymentStatus.PENDING,
-            )
-
-            # 6. Create Order Items and Deduct Stock
-            for cart_item in cart_items:
-                OrderItem.objects.create(
-                    order=order,
-                    product=cart_item.product,
-                    quantity=cart_item.quantity,
-                    unit_price=cart_item.unit_price,
-                    subtotal=cart_item.unit_price * cart_item.quantity,
-                )
-
-                # Deduct stock
-                product = cart_item.product
-                product.stock_quantity -= cart_item.quantity
-                product.save()
-
-            # 7. Clear Cart items after successful checkout
-            cart_items.delete()
 
         serializer_response = OrderSerializer(order)
         return Response(

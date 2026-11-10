@@ -1,5 +1,6 @@
 from django.contrib import admin
-from users.models import User, Address, Profile
+
+from users.models import Address, Profile, User
 
 # Register your models here.
 
