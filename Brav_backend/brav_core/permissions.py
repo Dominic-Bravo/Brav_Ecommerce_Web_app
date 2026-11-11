@@ -90,3 +90,28 @@ class IsOwnerOrAdmin(BasePermission):
         # Check if object belongs to the user (e.g. Order.user or Address.user)
         owner = getattr(obj, "user", None)
         return owner == request.user
+
+class IsOwnerReadOnlyOrAdmin(BasePermission):
+    """
+    - Admins can do anything (Read/Write/Update).
+    - Owners can only Read (GET, HEAD, OPTIONS) their own objects.
+    - Unsafe methods (PUT, PATCH, DELETE) are restricted to admins only.
+    """
+
+    def has_permission(self, request, view):
+        return bool(request.user and request.user.is_authenticated)
+
+    def has_object_permission(self, request, view, obj):
+        is_admin = getattr(request.user, "role", None) == "admin" or request.user.is_staff
+
+        # Admins have full access to everything
+        if is_admin:
+            return True
+
+        # For regular users, only allow SAFE methods (GET) if they are the owner
+        if request.method in SAFE_METHODS:
+            owner = getattr(obj, "user", None)
+            return owner == request.user
+
+        # Block regular users from PUT, PATCH, or DELETE
+        return False

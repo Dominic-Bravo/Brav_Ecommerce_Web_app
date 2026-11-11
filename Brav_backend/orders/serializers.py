@@ -43,7 +43,6 @@ class OrderItemSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["id", "subtotal", "created_at"]
 
-
 class OrderSerializer(serializers.ModelSerializer):
     """Detailed serializer for user orders including items."""
 
@@ -82,3 +81,9 @@ class CheckoutSerializer(serializers.Serializer):
     )
     payment_method = serializers.CharField(max_length=50, default="Credit Card")
     coupon_code = serializers.CharField(max_length=50, required=False, allow_blank=True)
+
+
+class OrderAdminUpdateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Order
+        fields = ["status", "payment_status"]

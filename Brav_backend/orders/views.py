@@ -4,15 +4,14 @@ from rest_framework import generics, mixins, permissions, status, viewsets
 from rest_framework.response import Response
 
 from orders.models import Order, Coupon
-from orders.serializers import CheckoutSerializer, OrderSerializer, CouponSerializer
+from orders.serializers import CheckoutSerializer, OrderSerializer, CouponSerializer, OrderAdminUpdateSerializer
 from orders.services import process_checkout
 from brav_core.permissions import IsAdminUserRole
 
 from rest_framework import viewsets
 from drf_spectacular.utils import extend_schema_view, extend_schema
 from orders.models import Coupon
-from orders.serializers import CouponSerializer
-from brav_core.permissions import IsAdminOrReadOnly
+from brav_core.permissions import IsAdminOrReadOnly, IsOwnerReadOnlyOrAdmin
 
 
 @extend_schema_view(
@@ -72,18 +71,31 @@ class CouponViewSet(viewsets.ModelViewSet):
 @extend_schema_view(
     list=extend_schema(summary="List Orders (User/Admin)", tags=["Orders"]),
     retrieve=extend_schema(summary="Retrieve Order Details", tags=["Orders"]),
+    update=extend_schema(summary="Update Order Status (Admin Only)", tags=["Orders"]),
+    partial_update=extend_schema(summary="Partially Update Order Status (Admin Only)", tags=["Orders"]),
 )
 class OrderViewSet(
-    mixins.ListModelMixin, mixins.RetrieveModelMixin, viewsets.GenericViewSet
+    mixins.ListModelMixin,
+    mixins.RetrieveModelMixin,
+    mixins.UpdateModelMixin,  # 1. Added UpdateMixin for PUT & PATCH
+    viewsets.GenericViewSet
 ):
     """
-    ReadOnly ViewSet for viewing orders.
-    Customers see only their own orders. Admins see all store orders.
-    Orders are immutable and cannot be modified or deleted directly via API.
+    ViewSet for orders:
+    - Customers can view only their own orders.
+    - Admins can view all orders and update order/payment statuses.
     """
 
-    permission_classes = [permissions.IsAuthenticated]
-    serializer_class = OrderSerializer
+    permission_classes = [IsOwnerReadOnlyOrAdmin]
+
+    def get_serializer_class(self):
+        """
+        Use OrderAdminUpdateSerializer for PUT/PATCH requests,
+        and the default OrderSerializer for GET requests.
+        """
+        if self.action in ["update", "partial_update"]:
+            return OrderAdminUpdateSerializer
+        return OrderSerializer
 
     def get_queryset(self):
         user = self.request.user
