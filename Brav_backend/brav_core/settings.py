@@ -115,7 +115,7 @@ SIMPLE_JWT = {
 CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Web Client Dev URL
     "http://127.0.0.1:3000",
-    "https://yourdomain.com",  # Web Client Production URL
+    "https://brav-ecommerce-backend-server.onrender.com",  # Web Client Production URL
 ]
 
 CORS_ALLOW_CREDENTIALS = (
@@ -125,7 +125,7 @@ CORS_ALLOW_CREDENTIALS = (
 CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
-    "https://yourdomain.com",
+    "https://brav-ecommerce-backend-server.onrender.com",
 ]
 
 CSRF_COOKIE_HTTP_ONLY = (
