@@ -27,12 +27,21 @@ load_dotenv(BASE_DIR / ".env")  # <-- Add this line
 # See https://docs.djangoproject.com/en/6.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv("Secret_Key")
+
+if not SECRET_KEY:
+    raise ValueError("SECRET_KEY environment variable is missing.")
+
+SECRET_KEY = os.getenv("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+import os
+
+ALLOWED_HOSTS = os.environ.get(
+    "ALLOWED_HOSTS",
+    "localhost,127.0.0.1"
+).split(",")
 
 
 # Application definition
