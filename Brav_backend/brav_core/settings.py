@@ -109,7 +109,8 @@ SIMPLE_JWT = {
     "AUTH_COOKIE_PATH": "/",  # Scope cookie strictly to refresh endpoint
     "AUTH_COOKIE_HTTP_ONLY": True,  # Prevents JS/XSS access
     "AUTH_COOKIE_SECURE": os.getenv("DEBUG", "True") != "True",  # True in Production (HTTPS)
-    "AUTH_COOKIE_SAMESITE": "Lax",  # Prevents CSRF while preserving navigation
+    # "AUTH_COOKIE_SAMESITE": "Lax",  # Prevents CSRF while preserving navigation
+    "AUTH_COOKIE_SAMESITE": "None" if not DEBUG else "Lax",
 }
 
 # --- CORS & CSRF Settings ---
@@ -117,6 +118,7 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",  # Web Client Dev URL
     "http://127.0.0.1:3000",
     "https://brav-ecommerce-backend-server.onrender.com",  # Web Client Production URL
+    "https://brav-ecommerce-frontend.vercel.app",
 ]
 
 CORS_ALLOW_CREDENTIALS = (
@@ -127,13 +129,25 @@ CSRF_TRUSTED_ORIGINS = [
     "http://localhost:3000",
     "http://127.0.0.1:3000",
     "https://brav-ecommerce-backend-server.onrender.com",
+    "https://brav-ecommerce-frontend.vercel.app",
 ]
 
-CSRF_COOKIE_HTTP_ONLY = (
-    False  # Set to False so frontend JavaScript can read the CSRF token from cookie
-)
-CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = os.getenv("DEBUG", "True") != "True"
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+USE_X_FORWARDED_HOST = True
+ACCOUNT_DEFAULT_HTTP_PROTOCOL = "https" if not DEBUG else "http"
+
+# CSRF_COOKIE_HTTP_ONLY = (
+#     False  # Set to False so frontend JavaScript can read the CSRF token from cookie
+# )
+# CSRF_COOKIE_SAMESITE = "Lax"
+# CSRF_COOKIE_SECURE = os.getenv("DEBUG", "True") != "True"
+
+CSRF_COOKIE_HTTP_ONLY = False
+CSRF_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+CSRF_COOKIE_SECURE = not DEBUG
+
+SESSION_COOKIE_SAMESITE = "None" if not DEBUG else "Lax"
+SESSION_COOKIE_SECURE = not DEBUG
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # Place as high as possible
@@ -201,8 +215,8 @@ SOCIALACCOUNT_PROVIDERS = {
         "SCOPE": [
             "profile",
             "email",
-            "https://www.googleapis.com/auth/user.birthday.read",  # Required for DOB
-            "https://www.googleapis.com/auth/user.gender.read",  # Required for Gender
+            # "https://www.googleapis.com/auth/user.birthday.read",  # Required for DOB
+            # "https://www.googleapis.com/auth/user.gender.read",  # Required for Gender
         ],
         "AUTH_PARAMS": {"access_type": "online"},
     },
