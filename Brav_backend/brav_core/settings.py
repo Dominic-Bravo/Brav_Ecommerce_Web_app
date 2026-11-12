@@ -11,9 +11,10 @@ https://docs.djangoproject.com/en/6.1/ref/settings/
 """
 
 import os
+from datetime import timedelta
 from pathlib import Path
-import dj_database_url # postgress
 
+import dj_database_url  # postgress
 from dotenv import load_dotenv  # <-- Add this import
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -36,14 +37,16 @@ if not SECRET_KEY:
     raise ValueError("SECRET_KEY environment variable is missing.")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.getenv("DEBUG", "False").lower() == "true"
 
-import os
-
-ALLOWED_HOSTS = os.environ.get(
-    "ALLOWED_HOSTS",
-    "localhost,127.0.0.1"
-).split(",")
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.getenv(
+        "ALLOWED_HOSTS",
+        "localhost,127.0.0.1"
+    ).split(",")
+    if host.strip()
+]
 
 
 # Application definition
@@ -93,7 +96,6 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 
-from datetime import timedelta
 
 # --- SimpleJWT Settings ---
 SIMPLE_JWT = {
@@ -106,8 +108,7 @@ SIMPLE_JWT = {
     "AUTH_COOKIE": "refresh_token",
     "AUTH_COOKIE_PATH": "/",  # Scope cookie strictly to refresh endpoint
     "AUTH_COOKIE_HTTP_ONLY": True,  # Prevents JS/XSS access
-    "AUTH_COOKIE_SECURE": not os.getenv("DEBUG", "True")
-    == "True",  # True in Production (HTTPS)
+    "AUTH_COOKIE_SECURE": os.getenv("DEBUG", "True") != "True",  # True in Production (HTTPS)
     "AUTH_COOKIE_SAMESITE": "Lax",  # Prevents CSRF while preserving navigation
 }
 
@@ -132,7 +133,7 @@ CSRF_COOKIE_HTTP_ONLY = (
     False  # Set to False so frontend JavaScript can read the CSRF token from cookie
 )
 CSRF_COOKIE_SAMESITE = "Lax"
-CSRF_COOKIE_SECURE = not os.getenv("DEBUG", "True") == "True"
+CSRF_COOKIE_SECURE = os.getenv("DEBUG", "True") != "True"
 
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",  # Place as high as possible
@@ -167,7 +168,7 @@ REST_FRAMEWORK = {
 }
 
 # CORS settings for frontend integration
-CORS_ALLOW_ALL_ORIGINS = True
+# CORS_ALLOW_ALL_ORIGINS = True
 
 # Integrate SimpleJWT with dj-rest-auth
 REST_AUTH = {
@@ -322,7 +323,10 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 # https://docs.djangoproject.com/en/6.1/topics/email/#topic-email-configuration
 
 MAILERS = {
+    # "default": {
+    #     "BACKEND": "django.core.mail.backends.console.EmailBackend",
+    # },
     "default": {
-        "BACKEND": "django.core.mail.backends.console.EmailBackend",
+        "BACKEND": "django.core.mail.backends.dummy.EmailBackend",
     },
 }
